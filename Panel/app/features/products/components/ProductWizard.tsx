@@ -1,0 +1,1159 @@
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent, type FormEvent } from "react";
+import { ConfirmDialog } from "~/components/common/ConfirmDialog";
+import { PersianDateTimePicker } from "~/components/common/PersianDateTimePicker";
+import { AttributeType } from "~/features/attributes/models/enums/attribute-type";
+import { AttributeUnit, getAttributeUnitLabel } from "~/features/attributes/models/enums/attribute-unit";
+import { categoryApi } from "~/features/categories/api/category-api";
+import type { CategoryListOutput } from "~/features/categories/models/output/category-list-output";
+import { brandApi } from "~/features/brands/api/brand-api";
+import type { Brand } from "~/features/brands/models/brand";
+import { sellerApi } from "~/features/sellers/api/seller-api";
+import type { SellerListOutput } from "~/features/sellers/models/seller";
+import { createClientId } from "~/shared/utils/create-client-id";
+import { unescapeHtmlEntities } from "~/shared/utils/unescape-html-entities";
+import { RichTextEditor } from "~/components/common/rich-text-editor";
+import type {
+  ProductAttributeDefinition,
+  ProductCreateInput,
+  ProductImage,
+  ProductListOutput,
+} from "../models/product";
+import { useProductStore } from "../store/product-store";
+import { resolveProductImageUrl } from "../utils/resolve-product-image-url";
+import { SellerPickerModal } from "./SellerPickerModal";
+
+interface ProductWizardProps {
+  product?: ProductListOutput;
+  onClose: () => void;
+  onComplete: () => void;
+}
+
+interface SelectedImage {
+  id: string;
+  file: File;
+  previewUrl: string;
+}
+
+interface VariantValueDraft {
+  key: string;
+  id?: number;
+  size: string;
+  model: string;
+  colorName: string;
+  colorCode: string;
+}
+
+interface VariantDraft {
+  key: string;
+  id?: number | null;
+  price: string;
+  stock: string;
+  values: VariantValueDraft[];
+}
+
+interface VariantValueErrors {
+  size?: string;
+  model?: string;
+  colorName?: string;
+  colorCode?: string;
+}
+
+interface VariantErrors {
+  price?: string;
+  stock?: string;
+  values?: string;
+  combo?: string;
+  valueErrors: Record<string, VariantValueErrors>;
+}
+
+interface WizardValidation {
+  discount?: string;
+  variants?: string;
+  variantErrors: Record<string, VariantErrors>;
+}
+
+const steps = [
+  { title: "دسته‌بندی", icon: "category" },
+  { title: "جزئیات", icon: "tune" },
+  { title: "تصاویر", icon: "photo_library" },
+];
+
+const inputClasses =
+  "block min-h-11 w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 dark:border-gray-700 dark:bg-gray-950 dark:text-white dark:placeholder-gray-500";
+
+const errorTextClasses = "mt-1 block text-xs text-red-600 dark:text-red-400";
+
+function formatPrice(value: number): string {
+  return new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 2 }).format(value);
+}
+
+function createEmptyValue(): VariantValueDraft {
+  return { key: createClientId(), size: "", model: "", colorName: "", colorCode: "" };
+}
+
+function createEmptyVariant(): VariantDraft {
+  return { key: createClientId(), id: null, price: "", stock: "", values: [createEmptyValue()] };
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error && error.message ? error.message : "خطای غیرمنتظره‌ای رخ داد.";
+}
+
+function parseNonNegative(value: string): number | null {
+  const trimmed = value.trim();
+  if (trimmed === "") return null;
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function isValidColorCode(value: string): boolean {
+  return /^#[0-9a-fA-F]{6}$/.test(value.trim());
+}
+
+function variantComboKey(values: VariantValueDraft[]): string {
+  return values
+    .map((value) => {
+      const parts = [
+        value.size.trim().toLowerCase(),
+        value.colorName.trim().toLowerCase(),
+        value.colorCode.trim().toLowerCase(),
+      ];
+      const model = value.model.trim().toLowerCase();
+      if (model) parts.push(model);
+      return parts.join("\u001f");
+    })
+    .sort()
+    .join("\u001e");
+}
+
+interface AttributeValueFieldProps {
+  attribute: ProductAttributeDefinition;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+function AttributeValueField({ attribute, value, onChange }: AttributeValueFieldProps) {
+  const unit = attribute.attributeUnit === AttributeUnit.None
+    ? null
+    : getAttributeUnitLabel(attribute.attributeUnit);
+
+  if (attribute.attributeType === AttributeType.Bool) {
+    return <select value={value} onChange={(event) => onChange(event.target.value)} className={inputClasses}><option value="">انتخاب کنید</option><option value="true">بله</option><option value="false">خیر</option></select>;
+  }
+
+  if (attribute.attributeType === AttributeType.LongText) {
+    return (
+      <div>
+        <textarea value={value} onChange={(event) => onChange(event.target.value)} className={`${inputClasses} min-h-24 resize-y`} placeholder="مقدار را وارد کنید" />
+        {unit && <span className="mt-1 block text-xs text-gray-400">واحد: {unit}</span>}
+      </div>
+    );
+  }
+
+  const dateMode =
+    attribute.attributeType === AttributeType.Date
+      ? "date"
+      : attribute.attributeType === AttributeType.DateTime
+        ? "datetime"
+        : attribute.attributeType === AttributeType.Time
+          ? "time"
+          : null;
+
+  if (dateMode) {
+    return (
+      <div>
+        <PersianDateTimePicker
+          mode={dateMode}
+          value={value}
+          onChange={onChange}
+          className={inputClasses}
+          ariaLabel={attribute.attributeTitle ?? "مقدار ویژگی"}
+        />
+        {unit && <span className="mt-1 block text-xs text-gray-400">واحد: {unit}</span>}
+      </div>
+    );
+  }
+
+  const inputProps = (() => {
+    switch (attribute.attributeType) {
+      case AttributeType.Int:
+        return { type: "number", inputMode: "numeric" as const, step: "1" };
+      case AttributeType.Url:
+        return { type: "url", inputMode: "url" as const, placeholder: "https://example.com" };
+      case AttributeType.Email:
+        return { type: "email", inputMode: "email" as const, placeholder: "name@example.com" };
+      case AttributeType.Phone:
+        return { type: "tel", inputMode: "tel" as const, placeholder: "+98 912 000 0000" };
+      default:
+        return { type: "text" };
+    }
+  })();
+
+  return (
+    <div className="relative">
+      <input {...inputProps} value={value} onChange={(event) => onChange(event.target.value)} className={`${inputClasses} ${unit ? "pl-24" : ""}`} />
+      {unit && <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-xs text-gray-400">{unit}</span>}
+    </div>
+  );
+}
+
+export function ProductWizard({ product, onClose, onComplete }: ProductWizardProps) {
+  const { createProduct, getProduct, updateProduct, uploadImage, deleteImage, setMainImage, reorderImages, submitting } =
+    useProductStore();
+  const editingProductId = product?.id;
+  const isEditing = editingProductId !== undefined;
+  const [step, setStep] = useState(isEditing ? 1 : 0);
+  const [categories, setCategories] = useState<CategoryListOutput[]>([]);
+  const [sellers, setSellers] = useState<SellerListOutput[]>([]);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [attributes, setAttributes] = useState<ProductAttributeDefinition[]>([]);
+  const [categoryId, setCategoryId] = useState<number | null>(null);
+  const [sellerId, setSellerId] = useState<number | null>(null);
+  const [productBrandId, setProductBrandId] = useState<number | null>(null);
+  const [title, setTitle] = useState("");
+  const [shortDescription, setShortDescription] = useState("");
+  const [longDescription, setLongDescription] = useState("");
+  const [discount, setDiscount] = useState("0");
+  const [attributeValues, setAttributeValues] = useState<Record<number, string>>({});
+  const [productVariants, setProductVariants] = useState<VariantDraft[]>(() =>
+    isEditing ? [] : [createEmptyVariant()],
+  );
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  const [images, setImages] = useState<SelectedImage[]>([]);
+  const [existingImages, setExistingImages] = useState<ProductImage[]>([]);
+  const [imageOrder, setImageOrder] = useState<string[]>([]);
+  const [draggingImageKey, setDraggingImageKey] = useState<string | null>(null);
+  const [dragOverImageKey, setDragOverImageKey] = useState<string | null>(null);
+  const [deletedImageIds, setDeletedImageIds] = useState<number[]>([]);
+  const imagesRef = useRef<SelectedImage[]>([]);
+  const [mainImageId, setMainImageId] = useState<string | null>(null);
+  const [mainExistingId, setMainExistingId] = useState<number | null>(null);
+  const [savedProductId, setSavedProductId] = useState<number | null>(product?.id ?? null);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedCategoryIds, setExpandedCategoryIds] = useState<Set<number>>(new Set());
+  const [sellerModalOpen, setSellerModalOpen] = useState(false);
+  const [variantConfirmIndex, setVariantConfirmIndex] = useState<number | null>(null);
+  const [bulkPrice, setBulkPrice] = useState("");
+  const [bulkStock, setBulkStock] = useState("");
+  const [bulkConfirmKind, setBulkConfirmKind] = useState<"price" | "stock" | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const request = isEditing
+      ? Promise.all([
+          categoryApi.list(),
+          sellerApi.list(),
+          brandApi.list(),
+          getProduct(editingProductId),
+        ]).then(([list, sellerList, brandList, details]) => {
+          if (!active) return;
+          setCategories(list);
+          setSellers(sellerList);
+          setBrands(brandList);
+          setCategoryId(details.categoryId);
+          setSellerId(details.seller.id);
+          setProductBrandId(details.brand?.id ?? null);
+          setTitle(details.name);
+          setShortDescription(details.shortDescription ?? "");
+          setLongDescription(unescapeHtmlEntities(details.longDescription) ?? "");
+          setDiscount(String(details.discount));
+          setAttributes(details.attributes ?? []);
+          setAttributeValues(
+            Object.fromEntries((details.attributes ?? []).map((item) => [item.attributeId, item.value]))
+          );
+          setProductVariants(
+            (details.variants ?? []).map((variant) => ({
+              key: createClientId(),
+              id: variant.id,
+              price: String(variant.price),
+              stock: String(variant.stock),
+              values: variant.values.map((value) => ({
+                key: createClientId(),
+                id: value.id,
+                size: value.size ?? "",
+                model: value.model ?? "",
+                colorName: value.colorName ?? "",
+                colorCode: value.colorCode ?? "",
+              })),
+            }))
+          );
+          setExistingImages(details.images ?? []);
+          setImageOrder((details.images ?? []).map((image) => `existing:${image.id}`));
+          setMainExistingId(details.images?.find((image) => image.isMain)?.id ?? null);
+        })
+      : Promise.all([categoryApi.list(), sellerApi.list(), brandApi.list()]).then(
+          ([list, sellerList, brandList]) => {
+          if (!active) return;
+          setCategories(list);
+          setSellers(sellerList);
+          setBrands(brandList);
+          setSellerId(sellerList[0]?.id ?? null);
+          setProductBrandId(null);
+        }
+      );
+
+    request
+      .catch((reason: unknown) => active && setError(errorMessage(reason)))
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, [editingProductId, getProduct, isEditing]);
+
+  useEffect(() => {
+    imagesRef.current = images;
+  }, [images]);
+
+  useEffect(() => {
+    return () => imagesRef.current.forEach((image) => URL.revokeObjectURL(image.previewUrl));
+  }, []);
+
+  const loadAttributes = async () => {
+    if (categoryId === null) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const categoryAttributes = await categoryApi.listCategoryAttributes(categoryId);
+      setAttributes(categoryAttributes.map((attribute) => ({ ...attribute, value: "" })));
+      setAttributeValues({});
+      setStep(1);
+    } catch (reason) {
+      setError(errorMessage(reason));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const validation = useMemo<WizardValidation>(() => {
+    const result: WizardValidation = { variantErrors: {} };
+
+    if (productVariants.length === 0) {
+      result.variants = "حداقل یک تنوع برای محصول لازم است.";
+    }
+
+    const seenCombos = new Map<string, string>();
+
+    productVariants.forEach((variant) => {
+      const variantErrors: VariantErrors = { valueErrors: {} };
+
+      const price = parseNonNegative(variant.price);
+      if (price === null) {
+        variantErrors.price =
+          variant.price.trim() === "" ? "قیمت را وارد کنید." : "قیمت نمی‌تواند منفی باشد.";
+      }
+
+      const stock = parseNonNegative(variant.stock);
+      if (stock === null) {
+        variantErrors.stock =
+          variant.stock.trim() === "" ? "موجودی را وارد کنید." : "موجودی نمی‌تواند منفی باشد.";
+      }
+
+      if (variant.values.length === 0) {
+        variantErrors.values = "حداقل یک مقدار برای این تنوع لازم است.";
+      }
+
+      const seenValues = new Set<string>();
+      variant.values.forEach((value) => {
+        const valueErrors: VariantValueErrors = {};
+        const size = value.size.trim();
+        const model = value.model.trim();
+        const colorName = value.colorName.trim();
+        const colorCode = value.colorCode.trim();
+
+        if (size.length > 50) {
+          valueErrors.size = "سایز نمی‌تواند بیشتر از ۵۰ کاراکتر باشد.";
+        }
+        if (model.length > 100) valueErrors.model = "مدل نمی‌تواند بیشتر از ۱۰۰ کاراکتر باشد.";
+        if (colorName.length > 100) valueErrors.colorName = "نام رنگ نمی‌تواند بیشتر از ۱۰۰ کاراکتر باشد.";
+        if (colorCode && !isValidColorCode(colorCode)) valueErrors.colorCode = "کد رنگ باید مانند #e11d48 باشد.";
+        if (!size && !model && !colorName && !colorCode) valueErrors.size = "حداقل یکی از مشخصات تنوع را وارد کنید.";
+
+        const valueKey = variantComboKey([value]);
+        if (seenValues.has(valueKey)) valueErrors.colorName = "این مقدار تکراری است.";
+        else seenValues.add(valueKey);
+
+        if (valueErrors.size || valueErrors.model || valueErrors.colorName || valueErrors.colorCode) {
+          variantErrors.valueErrors[value.key] = valueErrors;
+        }
+      });
+
+      if (variant.values.length > 0) {
+        const comboKey = variantComboKey(variant.values);
+        const existingOwner = seenCombos.get(comboKey);
+        if (existingOwner !== undefined && existingOwner !== variant.key) {
+          variantErrors.combo = "ترکیب مقادیر این تنوع با تنوع دیگر تکراری است.";
+        } else {
+          seenCombos.set(comboKey, variant.key);
+        }
+      }
+
+      if (
+        variantErrors.price ||
+        variantErrors.stock ||
+        variantErrors.values ||
+        variantErrors.combo ||
+        Object.keys(variantErrors.valueErrors).length > 0
+      ) {
+        result.variantErrors[variant.key] = variantErrors;
+      }
+    });
+
+    const discountValue = discount.trim() === "" ? 0 : Number(discount);
+    if (!Number.isFinite(discountValue)) {
+      result.discount = "تخفیف را به درستی وارد کنید.";
+    } else if (discountValue < 0) {
+      result.discount = "تخفیف نمی‌تواند منفی باشد.";
+    } else {
+      const variantPrices = productVariants
+        .map((variant) => parseNonNegative(variant.price))
+        .filter((price): price is number => price !== null);
+      if (variantPrices.some((price) => discountValue > price)) {
+        result.discount = "تخفیف نمی‌تواند از قیمت هیچ تنوعی بیشتر باشد.";
+      }
+    }
+
+    return result;
+  }, [productVariants, discount]);
+
+  const hasValidationErrors =
+    !!validation.discount ||
+    !!validation.variants ||
+    Object.keys(validation.variantErrors).length > 0;
+
+  const buildVariantsPayload = (): ProductCreateInput["variants"] =>
+    productVariants.map((variant) => {
+      const base = {
+        price: parseNonNegative(variant.price) ?? 0,
+        stock: parseNonNegative(variant.stock) ?? 0,
+        values: variant.values.map((value) => ({
+          size: value.size.trim() || null,
+          model: value.model.trim() || null,
+          colorName: value.colorName.trim() || null,
+          colorCode: value.colorCode.trim() || null,
+        })),
+      };
+      return isEditing ? { id: variant.id ?? null, ...base } : base;
+    });
+
+  const saveDetails = async (event: FormEvent) => {
+    event.preventDefault();
+    setAttemptedSubmit(true);
+    if (categoryId === null || sellerId === null || !title.trim()) return;
+    if (hasValidationErrors) return;
+    setError(null);
+    try {
+      const input: ProductCreateInput = {
+        name: title.trim(),
+        shortDescription: shortDescription.trim() || null,
+        longDescription: longDescription.trim() || null,
+        discount: discount.trim() === "" ? 0 : Number(discount),
+        categoryId,
+        sellerId,
+        productBrandId,
+        attributes: attributes.map((attribute) => ({
+          attributeId: attribute.attributeId,
+          value: attributeValues[attribute.attributeId]?.trim() ?? "",
+        })),
+        variants: buildVariantsPayload(),
+      };
+      if (editingProductId !== undefined) {
+        await updateProduct(editingProductId, input);
+      } else {
+        const created = await createProduct(input);
+        setSavedProductId(created.id);
+      }
+      setStep(2);
+    } catch (reason) {
+      setError(errorMessage(reason));
+    }
+  };
+
+  const addVariant = () => {
+    setProductVariants((current) => [...current, createEmptyVariant()]);
+  };
+
+  const requestRemoveVariant = (index: number) => {
+    if (productVariants[index]?.id != null) {
+      setVariantConfirmIndex(index);
+    } else {
+      setProductVariants((current) => current.filter((_, i) => i !== index));
+    }
+  };
+
+  const confirmRemoveVariant = () => {
+    if (variantConfirmIndex === null) return;
+    const index = variantConfirmIndex;
+    setVariantConfirmIndex(null);
+    setProductVariants((current) => current.filter((_, i) => i !== index));
+  };
+
+  const bulkPriceValue = parseNonNegative(bulkPrice);
+  const bulkStockValue = parseNonNegative(bulkStock);
+
+  const requestBulkPrice = () => {
+    if (productVariants.length === 0 || bulkPriceValue === null) return;
+    setBulkConfirmKind("price");
+  };
+
+  const requestBulkStock = () => {
+    if (productVariants.length === 0 || bulkStockValue === null) return;
+    setBulkConfirmKind("stock");
+  };
+
+  const confirmBulkApply = () => {
+    if (bulkConfirmKind === "price" && bulkPriceValue !== null) {
+      setProductVariants((current) =>
+        current.map((variant) => ({ ...variant, price: String(bulkPriceValue) }))
+      );
+      setBulkPrice("");
+    } else if (bulkConfirmKind === "stock" && bulkStockValue !== null) {
+      const nextStock = String(bulkStockValue);
+      setProductVariants((current) =>
+        current.map((variant) => ({ ...variant, stock: nextStock }))
+      );
+      setBulkStock("");
+    }
+    setBulkConfirmKind(null);
+  };
+
+  const updateVariantField = (index: number, field: "price" | "stock", value: string) => {
+    setProductVariants((current) =>
+      current.map((variant, i) => (i === index ? { ...variant, [field]: value } : variant))
+    );
+  };
+
+  const addVariantValue = (index: number) => {
+    setProductVariants((current) =>
+      current.map((variant, i) =>
+        i === index ? { ...variant, values: [...variant.values, createEmptyValue()] } : variant
+      )
+    );
+  };
+
+  const removeVariantValue = (variantIndex: number, valueKey: string) => {
+    setProductVariants((current) =>
+      current.map((variant, i) =>
+        i === variantIndex
+          ? { ...variant, values: variant.values.filter((value) => value.key !== valueKey) }
+          : variant
+      )
+    );
+  };
+
+  const updateVariantValue = (
+    variantIndex: number,
+    valueKey: string,
+    field: "size" | "model" | "colorName" | "colorCode",
+    value: string
+  ) => {
+    setProductVariants((current) =>
+      current.map((variant, i) =>
+        i === variantIndex
+          ? {
+              ...variant,
+              values: variant.values.map((item) =>
+                item.key === valueKey ? { ...item, [field]: value } : item
+              ),
+            }
+          : variant
+      )
+    );
+  };
+
+  const selectImages = (event: ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(event.target.files ?? []);
+    const files = selectedFiles.filter(
+      (file) => ["image/webp", "image/jpeg", "image/png"].includes(file.type) || /\.(webp|jpe?g|png)$/i.test(file.name)
+    );
+
+    if (files.length === 0) {
+      setError("فقط فایل تصویری WebP، JPG یا PNG پذیرفته می‌شود.");
+      event.target.value = "";
+      return;
+    }
+
+    setError(
+      files.length === selectedFiles.length
+        ? null
+        : "فقط فایل‌های WebP، JPG و PNG اضافه شدند؛ بقیه فایل‌ها نادیده گرفته شدند."
+    );
+    const next = files.map((file) => ({
+      id: createClientId(),
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }));
+    setImages((current) => [...current, ...next]);
+    setImageOrder((current) => [...current, ...next.map((image) => `new:${image.id}`)]);
+    if (mainExistingId === null) {
+      setMainImageId((current) => current ?? next[0]?.id ?? null);
+    }
+    event.target.value = "";
+  };
+
+  const removeImage = (id: string) => {
+    setImageOrder((current) => current.filter((key) => key !== `new:${id}`));
+    setImages((current) => {
+      const image = current.find((item) => item.id === id);
+      if (image) URL.revokeObjectURL(image.previewUrl);
+      const next = current.filter((item) => item.id !== id);
+      if (mainImageId === id) {
+        const fallbackNew = next[0]?.id ?? null;
+        if (fallbackNew) {
+          setMainImageId(fallbackNew);
+        } else {
+          setMainImageId(null);
+          setMainExistingId(
+            existingImages.find((item) => !deletedImageIds.includes(item.id))?.id ?? null
+          );
+        }
+      }
+      return next;
+    });
+  };
+
+  const finish = async () => {
+    if (savedProductId === null) return;
+    setUploading(true);
+    setError(null);
+    const uploadedIds = new Map<string, number>();
+    let uploadsComplete = false;
+    try {
+      const finalKeys = imageOrder.filter((key) => {
+        if (key.startsWith("existing:")) {
+          const id = Number(key.slice("existing:".length));
+          return !deletedImageIds.includes(id);
+        }
+        return images.some((image) => `new:${image.id}` === key);
+      });
+
+      for (let index = 0; index < finalKeys.length; index++) {
+        const key = finalKeys[index];
+        if (!key.startsWith("new:")) continue;
+        const clientId = key.slice("new:".length);
+        const image = images.find((item) => item.id === clientId);
+        if (!image) continue;
+        const uploaded = await uploadImage({
+          file: image.file,
+          name: `${savedProductId}-${image.id}-${image.file.name.replace(/\.[^/.]+$/, "")}`,
+          productId: savedProductId,
+          isMain: image.id === mainImageId,
+          fileType: 0,
+        });
+        uploadedIds.set(key, uploaded.id);
+      }
+      uploadsComplete = true;
+
+      await Promise.all(deletedImageIds.map((id) => deleteImage(id)));
+      if (
+        mainExistingId !== null &&
+        mainExistingId !== currentMainExistingId &&
+        !deletedImageIds.includes(mainExistingId)
+      ) {
+        await setMainImage(mainExistingId);
+      }
+
+      const finalIds = finalKeys
+        .map((key) =>
+          key.startsWith("existing:")
+            ? Number(key.slice("existing:".length))
+            : uploadedIds.get(key)
+        )
+        .filter((id): id is number => typeof id === "number");
+
+      if (finalIds.length > 0) await reorderImages(finalIds);
+
+      onComplete();
+    } catch (reason) {
+      if (!uploadsComplete && uploadedIds.size > 0) {
+        await Promise.allSettled([...uploadedIds.values()].map((id) => deleteImage(id)));
+      }
+      setError(errorMessage(reason));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const toggleExistingImageDeletion = (image: ProductImage) => {
+    const willDelete = !deletedImageIds.includes(image.id);
+    const nextDeleted = willDelete
+      ? [...deletedImageIds, image.id]
+      : deletedImageIds.filter((id) => id !== image.id);
+    setDeletedImageIds(nextDeleted);
+    if (!willDelete && mainExistingId === null && mainImageId === null) {
+      setMainExistingId(image.id);
+    }
+    if (willDelete && mainExistingId === image.id) {
+      const fallbackExisting =
+        existingImages.find((item) => item.id !== image.id && !nextDeleted.includes(item.id))?.id ?? null;
+      if (fallbackExisting !== null) {
+        setMainExistingId(fallbackExisting);
+      } else {
+        setMainExistingId(null);
+        setMainImageId(images[0]?.id ?? null);
+      }
+    }
+  };
+
+  const toggleCategoryExpand = (id: number) => {
+    setExpandedCategoryIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const canSubmitDetails =
+    title.trim().length > 0 &&
+    sellerId !== null;
+  const currentMainExistingId = existingImages.find(
+    (image) => image.isMain && !deletedImageIds.includes(image.id)
+  )?.id ?? null;
+  const mainChanged = mainExistingId !== currentMainExistingId;
+
+  const originalExistingOrder = existingImages.map((image) => `existing:${image.id}`);
+  const currentExistingOrder = imageOrder.filter((key) => key.startsWith("existing:"));
+  const orderChanged = currentExistingOrder.join("|") !== originalExistingOrder.join("|");
+  const hasImageWork = images.length > 0 || deletedImageIds.length > 0 || mainChanged || orderChanged;
+
+  const orderedImages = useMemo(() => {
+    const existingByKey = new Map<string, ProductImage>(
+      existingImages.map((image) => [`existing:${image.id}`, image])
+    );
+    const newByKey = new Map<string, SelectedImage>(
+      images.map((image) => [`new:${image.id}`, image])
+    );
+    const items: Array<
+      | { kind: "existing"; key: string; image: ProductImage }
+      | { kind: "new"; key: string; image: SelectedImage }
+    > = [];
+
+    for (const key of imageOrder) {
+      const existing = existingByKey.get(key);
+      if (existing) {
+        items.push({ kind: "existing", key, image: existing });
+        continue;
+      }
+      const pending = newByKey.get(key);
+      if (pending) items.push({ kind: "new", key, image: pending });
+    }
+
+    return items;
+  }, [existingImages, images, imageOrder]);
+
+  const handleImageDragStart = (key: string) => (event: DragEvent<HTMLDivElement>) => {
+    setDraggingImageKey(key);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", key);
+  };
+
+  const handleImageDragOver = (key: string) => (event: DragEvent<HTMLDivElement>) => {
+    if (!draggingImageKey) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    if (key !== draggingImageKey) setDragOverImageKey(key);
+  };
+
+  const handleImageDrop = (key: string) => (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const source = draggingImageKey ?? event.dataTransfer.getData("text/plain");
+    setDraggingImageKey(null);
+    setDragOverImageKey(null);
+    if (!source || source === key) return;
+    setImageOrder((current) => {
+      const from = current.indexOf(source);
+      const to = current.indexOf(key);
+      if (from < 0 || to < 0) return current;
+      const next = [...current];
+      next.splice(from, 1);
+      next.splice(to, 0, source);
+      return next;
+    });
+  };
+
+  const handleImageDragEnd = () => {
+    setDraggingImageKey(null);
+    setDragOverImageKey(null);
+  };
+
+  const selectNewMain = (id: string) => {
+    setMainImageId(id);
+    setMainExistingId(null);
+  };
+
+  const selectExistingMain = (id: number) => {
+    setMainExistingId(id);
+    setMainImageId(null);
+  };
+
+  const selectedSeller = sellers.find((s) => s.id === sellerId);
+  const showErrors = attemptedSubmit;
+  const discountNumber = discount.trim() === "" ? 0 : Number(discount);
+
+  const renderCategoryTree = (items: CategoryListOutput[], depth = 0) => (
+    <ul className={depth > 0 ? "mr-3 border-r border-gray-200 pr-1.5 sm:mr-5 sm:pr-2 dark:border-gray-700" : "space-y-1"}>
+      {items.map((category) => {
+        const children = category.children ?? [];
+        const hasChildren = children.length > 0;
+        const expanded = expandedCategoryIds.has(category.id);
+        const selected = categoryId === category.id;
+        return (
+          <li key={category.id}>
+            <div className={`flex min-h-10 items-center rounded-lg transition-colors ${selected ? "bg-primary-50 text-primary-700 dark:bg-primary-950/40 dark:text-primary-300" : "text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"}`}>
+              <button type="button" onClick={() => hasChildren && toggleCategoryExpand(category.id)} disabled={!hasChildren} className="flex size-8 shrink-0 items-center justify-center rounded-lg text-gray-400 disabled:opacity-25">
+                <span className="material-symbols-outlined text-lg">{hasChildren ? (expanded ? "keyboard_arrow_down" : "keyboard_arrow_left") : "remove"}</span>
+              </button>
+              <button type="button" onClick={() => setCategoryId(category.id)} className="flex min-w-0 flex-1 items-center gap-2 self-stretch pl-3 text-right">
+                <span className="material-symbols-outlined text-lg">{hasChildren ? "folder" : "folder_open"}</span>
+                <span className="truncate text-sm font-medium">{category.name}</span>
+              </button>
+              {selected && <span className="material-symbols-outlined ml-2 text-lg text-primary-600 dark:text-primary-400">check_circle</span>}
+            </div>
+            {hasChildren && expanded && renderCategoryTree(children, depth + 1)}
+          </li>
+        );
+      })}
+    </ul>
+  );
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-gray-950/60 p-0 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="wizard-title">
+      <div className="flex h-dvh max-h-dvh w-full max-w-4xl flex-col overflow-hidden border border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900 sm:h-auto sm:max-h-[90dvh] sm:rounded-3xl">
+        <header className="flex items-start justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-800 sm:px-7 sm:py-5">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400">{isEditing ? "ویرایش محصول" : "محصول جدید"}</p>
+             <h2 id="wizard-title" className="mt-1 text-xl font-semibold text-gray-950 dark:text-white">{isEditing ? `ویرایش ${product?.name ?? "محصول"}` : "ایجاد فهرست محصول"}</h2>
+          </div>
+          <button type="button" onClick={onClose} className="flex size-11 items-center justify-center rounded-xl text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:hover:bg-gray-800 dark:hover:text-white" aria-label="بستن جادوگر">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </header>
+
+        <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-800 sm:px-7">
+          <ol className="grid grid-cols-3 gap-2" aria-label="پیشرفت ایجاد محصول">
+            {steps.map((item, index) => (
+              <li key={item.title} className="flex min-w-0 items-center gap-2">
+                <span className={`flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors ${index <= step ? "bg-primary-600 text-white" : "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500"}`} aria-current={index === step ? "step" : undefined}>
+                  <span className="material-symbols-outlined text-[19px]">{index < step ? "check" : item.icon}</span>
+                </span>
+                <span className={`hidden truncate text-sm font-medium sm:block ${index <= step ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-gray-500"}`}>{item.title}</span>
+                {index < steps.length - 1 && <span className={`h-px flex-1 ${index < step ? "bg-primary-500" : "bg-gray-200 dark:bg-gray-700"}`} />}
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        <div className="min-w-0 overflow-y-auto px-4 py-5 sm:px-7 sm:py-7">
+          {error && (
+            <div className="mb-5 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300" role="alert">
+              <span className="material-symbols-outlined text-[20px]">error</span><span>{error}</span>
+            </div>
+          )}
+
+          {step === 0 && (
+            <section>
+              <h3 className="text-lg font-semibold text-gray-950 dark:text-white">انتخاب دسته‌بندی</h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">دسته‌بندی مشخص می‌کند این محصول به چه مشخصاتی نیاز دارد.</p>
+              {loading ? (
+                <div className="mt-8 flex items-center justify-center gap-2 py-12 text-sm text-gray-500"><span className="material-symbols-outlined animate-spin">progress_activity</span>در حال بارگذاری دسته‌بندی‌ها...</div>
+              ) : categories.length === 0 ? (
+                <div className="mt-8 rounded-2xl border border-dashed border-gray-300 p-10 text-center dark:border-gray-700"><span className="material-symbols-outlined text-4xl text-gray-400">category</span><p className="mt-2 text-sm text-gray-600 dark:text-gray-300">قبل از افزودن محصول، یک دسته‌بندی ایجاد کنید.</p></div>
+              ) : (
+                <div className="mt-6 max-h-[50dvh] overflow-auto rounded-xl border border-gray-200 p-3 dark:border-gray-700">
+                  {renderCategoryTree(categories)}
+                </div>
+              )}
+            </section>
+          )}
+
+          {step === 1 && (
+            <form id="product-details-form" noValidate onSubmit={saveDetails}>
+              <h3 className="text-lg font-semibold text-gray-950 dark:text-white">جزئیات محصول</h3>
+               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">توضیحات، برند و تنوع‌های محصول را اضافه کنید.</p>
+                <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                  <label className="sm:col-span-2">
+                    <span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">فروشنده <span className="text-red-500">*</span></span>
+                    <button type="button" onClick={() => setSellerModalOpen(true)} className={`${inputClasses} flex items-center justify-between text-right`}>
+                      <span>{selectedSeller?.name ?? "انتخاب فروشنده"}</span>
+                      <span className="material-symbols-outlined text-xl text-gray-400">storefront</span>
+                    </button>
+                    {sellers.length === 0 && <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">قبل از ذخیره محصول، یک فروشنده ایجاد کنید.</p>}
+                  </label>
+                  <label className="sm:col-span-2"><span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">برند <span className="text-xs text-gray-400">(اختیاری)</span></span><select value={productBrandId ?? ""} onChange={(event) => setProductBrandId(event.target.value ? Number(event.target.value) : null)} className={inputClasses}><option value="">بدون برند</option>{brands.map((brand) => <option key={brand.id} value={brand.id}>{brand.name}</option>)}</select></label>
+                  <label className="sm:col-span-2"><span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">عنوان <span className="text-red-500">*</span></span><input value={title} onChange={(event) => setTitle(event.target.value)} className={inputClasses} placeholder="مثلاً هدفون بی‌سیم" required autoFocus /></label>
+                <label>
+                  <span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">تخفیف</span>
+                  <input type="number" inputMode="decimal" min="0" step="0.01" value={discount} onChange={(event) => setDiscount(event.target.value)} className={inputClasses} placeholder="0" />
+                  {Number.isFinite(discountNumber) && discountNumber >= 0 && (
+                    <span className="mt-1 block text-xs text-gray-400 dark:text-gray-500">{formatPrice(discountNumber)} تومان</span>
+                  )}
+                  {showErrors && validation.discount && <span className={errorTextClasses}>{validation.discount}</span>}
+                </label>
+                <div />
+                <label className="sm:col-span-2"><span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">توضیحات کوتاه</span><textarea value={shortDescription} onChange={(event) => setShortDescription(event.target.value)} className={`${inputClasses} min-h-20 resize-y`} placeholder="خلاصه کوتاه محصول" /></label>
+                 <div className="sm:col-span-2">
+                  <span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">توضیحات کامل</span>
+                  <RichTextEditor
+                    data={longDescription}
+                    onChange={setLongDescription}
+                    placeholder="توضیحات تفصیلی محصول (پشتیبانی از فرمت HTML)"
+                   />
+                 </div>
+
+                 <div className="sm:col-span-2 mt-2 border-t border-gray-200 pt-6 dark:border-gray-800">
+                   <div className="flex flex-wrap items-center justify-between gap-3">
+                     <div className="flex items-center gap-2">
+                       <span className="material-symbols-outlined text-primary-600 dark:text-primary-400">tune</span>
+                       <h4 className="font-semibold text-gray-900 dark:text-white">تنوع‌های محصول</h4>
+                     </div>
+                     <button type="button" onClick={addVariant} className="inline-flex min-h-10 items-center gap-1.5 rounded-xl border border-primary-600 px-4 text-sm font-semibold text-primary-700 transition-colors hover:bg-primary-50 dark:border-primary-500 dark:text-primary-300 dark:hover:bg-primary-950/40">
+                       <span className="material-symbols-outlined text-xl">add</span>
+                       افزودن تنوع
+                     </button>
+                   </div>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">قیمت، موجودی و رنگ هر تنوع را وارد کنید. سایز و مدل اختیاری هستند. کد رنگ باید مانند #e11d48 باشد.</p>
+
+                    {productVariants.length > 0 && (
+                      <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50/70 p-3 dark:border-gray-700 dark:bg-gray-800/40">
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-lg text-primary-600 dark:text-primary-400">bolt</span>
+                          <h5 className="text-sm font-semibold text-gray-800 dark:text-gray-100">اعمال گروهی</h5>
+                        </div>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">قیمت و موجودی همه تنوع‌ها به همان عدد واردشده تنظیم می‌شود.</p>
+                        <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                            <label className="min-w-0 flex-1">
+                              <span className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">قیمت همه (تومان)</span>
+                              <input type="number" inputMode="decimal" min="0" step="0.01" value={bulkPrice} onChange={(event) => setBulkPrice(event.target.value)} placeholder="مثلاً 200000" aria-label="قیمت گروهی تنوع‌ها" className={`${inputClasses} min-h-10 py-2`} disabled={submitting} />
+                            </label>
+                            <button type="button" onClick={requestBulkPrice} disabled={submitting || bulkPriceValue === null} className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1 rounded-xl bg-primary-600 px-4 text-xs font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50">اعمال قیمت</button>
+                          </div>
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                            <label className="min-w-0 flex-1">
+                              <span className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">موجودی همه</span>
+                              <input type="number" inputMode="numeric" min="0" step="1" value={bulkStock} onChange={(event) => setBulkStock(event.target.value)} placeholder="مثلاً 10" aria-label="موجودی همه تنوع‌ها" className={`${inputClasses} min-h-10 py-2`} disabled={submitting} />
+                            </label>
+                            <button type="button" onClick={requestBulkStock} disabled={submitting || bulkStockValue === null} className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1 rounded-xl bg-primary-600 px-4 text-xs font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50">اعمال موجودی</button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {showErrors && validation.variants && (
+                     <p role="alert" className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">{validation.variants}</p>
+                   )}
+
+                   <div className="mt-4 space-y-4">
+                     {productVariants.length === 0 && !showErrors && (
+                       <div className="rounded-xl border border-dashed border-gray-300 px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">هنوز تنوعی اضافه نشده است.</div>
+                     )}
+
+                     {productVariants.map((variant, variantIndex) => {
+                       const variantErrors = showErrors ? validation.variantErrors[variant.key] : undefined;
+                       const priceNumber = parseNonNegative(variant.price);
+                       return (
+                          <div key={variant.key} className="rounded-xl border border-gray-200 bg-gray-50/50 p-3 sm:p-4 dark:border-gray-700 dark:bg-gray-800/30">
+                           <div className="flex items-center justify-between gap-3">
+                             <h5 className="text-sm font-semibold text-gray-900 dark:text-white">تنوع {variantIndex + 1}</h5>
+                             <button type="button" onClick={() => requestRemoveVariant(variantIndex)} disabled={submitting} className="flex size-9 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-950/30" aria-label={`حذف تنوع ${variantIndex + 1}`}>
+                               <span className="material-symbols-outlined text-xl">delete</span>
+                             </button>
+                           </div>
+
+                           <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                             <div>
+                               <span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">قیمت (تومان) <span className="text-red-500">*</span></span>
+                               <input type="number" inputMode="decimal" min="0" step="0.01" value={variant.price} onChange={(event) => updateVariantField(variantIndex, "price", event.target.value)} className={inputClasses} placeholder="مثلاً 2500000" disabled={submitting} />
+                               {priceNumber !== null && priceNumber >= 0 && (
+                                 <span className="mt-1 block text-xs text-gray-400 dark:text-gray-500">{formatPrice(priceNumber)} تومان</span>
+                               )}
+                               {variantErrors?.price && <span role="alert" className={errorTextClasses}>{variantErrors.price}</span>}
+                             </div>
+                             <div>
+                               <span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">موجودی <span className="text-red-500">*</span></span>
+                               <input type="number" inputMode="numeric" min="0" step="1" value={variant.stock} onChange={(event) => updateVariantField(variantIndex, "stock", event.target.value)} className={inputClasses} placeholder="مثلاً 10" disabled={submitting} />
+                               {variantErrors?.stock && <span role="alert" className={errorTextClasses}>{variantErrors.stock}</span>}
+                             </div>
+                           </div>
+
+                           {variantErrors?.combo && (
+                             <p role="alert" className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300">{variantErrors.combo}</p>
+                           )}
+
+                           <div className="mt-4">
+                             <div className="flex flex-wrap items-center justify-between gap-2">
+                               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">مقادیر <span className="text-red-500">*</span></span>
+                               <button type="button" onClick={() => addVariantValue(variantIndex)} disabled={submitting} className="inline-flex min-h-9 items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 text-xs font-semibold text-gray-700 transition-colors hover:border-primary-400 hover:text-primary-600 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-950 dark:text-gray-200">
+                                 <span className="material-symbols-outlined text-base">add</span>
+                                 افزودن مقدار
+                               </button>
+                             </div>
+                             {variantErrors?.values && <span role="alert" className={errorTextClasses}>{variantErrors.values}</span>}
+
+                             {variant.values.length === 0 ? (
+                               <p className="mt-2 rounded-lg border border-dashed border-gray-300 px-3 py-3 text-center text-xs text-gray-500 dark:border-gray-600 dark:text-gray-400">حداقل یک مقدار اضافه کنید.</p>
+                             ) : (
+                               <div className="mt-2 space-y-2">
+                                 {variant.values.map((value, valueIndex) => {
+                                   const valueErrors = variantErrors?.valueErrors[value.key];
+                                   return (
+                                       <div key={value.key} className="grid gap-2 rounded-lg border border-gray-200 bg-white p-2.5 dark:border-gray-700 dark:bg-gray-950 sm:grid-cols-2 sm:items-start xl:grid-cols-[1fr_1.25fr_0.9fr_1fr_auto]">
+                                        <div>
+                                          <input value={value.colorName} onChange={(event) => updateVariantValue(variantIndex, value.key, "colorName", event.target.value)} className={`${inputClasses} min-h-10 py-2`} placeholder="نام رنگ (اختیاری)" aria-label={`نام رنگ مقدار ${valueIndex + 1}`} disabled={submitting} />
+                                          {valueErrors?.colorName && <span role="alert" className={errorTextClasses}>{valueErrors.colorName}</span>}
+                                        </div>
+                                        <div>
+                                           <div className="flex min-w-0 items-center gap-2">
+                                            <input
+                                              type="color"
+                                              value={isValidColorCode(value.colorCode) ? value.colorCode.trim() : "#000000"}
+                                              onChange={(event) => updateVariantValue(variantIndex, value.key, "colorCode", event.target.value)}
+                                              className="size-10 shrink-0 cursor-pointer rounded-lg border border-gray-300 bg-white p-1 dark:border-gray-700 dark:bg-gray-950"
+                                              aria-label={`انتخاب رنگ مقدار ${valueIndex + 1}`}
+                                              disabled={submitting}
+                                            />
+                                            <input value={value.colorCode} onChange={(event) => updateVariantValue(variantIndex, value.key, "colorCode", event.target.value)} className={`${inputClasses} min-h-10 py-2`} placeholder="کد رنگ (اختیاری)" aria-label={`کد رنگ مقدار ${valueIndex + 1}`} dir="ltr" disabled={submitting} />
+                                          </div>
+                                          {valueErrors?.colorCode && <span role="alert" className={errorTextClasses}>{valueErrors.colorCode}</span>}
+                                        </div>
+                                         <div>
+                                           <input value={value.size} onChange={(event) => updateVariantValue(variantIndex, value.key, "size", event.target.value)} className={`${inputClasses} min-h-10 py-2`} placeholder="سایز (اختیاری)" aria-label={`سایز مقدار ${valueIndex + 1}`} disabled={submitting} />
+                                           {valueErrors?.size && <span role="alert" className={errorTextClasses}>{valueErrors.size}</span>}
+                                         </div>
+                                         <div>
+                                           <input value={value.model} onChange={(event) => updateVariantValue(variantIndex, value.key, "model", event.target.value)} className={`${inputClasses} min-h-10 py-2`} placeholder="مدل (اختیاری)" aria-label={`مدل مقدار ${valueIndex + 1}`} disabled={submitting} />
+                                           {valueErrors?.model && <span role="alert" className={errorTextClasses}>{valueErrors.model}</span>}
+                                         </div>
+                                        <button type="button" onClick={() => removeVariantValue(variantIndex, value.key)} disabled={submitting} className="flex size-10 shrink-0 items-center justify-center justify-self-end rounded-lg text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:hover:bg-red-950/30 sm:col-span-2 xl:col-span-1" aria-label={`حذف مقدار ${valueIndex + 1}`}>
+                                         <span className="material-symbols-outlined text-xl">close</span>
+                                       </button>
+                                     </div>
+                                   );
+                                 })}
+                               </div>
+                             )}
+                           </div>
+                         </div>
+                       );
+                     })}
+                     </div>
+                   </div>
+                 </div>
+
+               {attributes.length > 0 && (
+                 <div className="mt-8 border-t border-gray-200 pt-6 dark:border-gray-800">
+                   <div className="flex items-center gap-2"><span className="material-symbols-outlined text-primary-600 dark:text-primary-400">tune</span><h4 className="font-semibold text-gray-900 dark:text-white">مشخصات</h4></div>
+                   <div className="mt-4 grid gap-5 sm:grid-cols-2">
+                     {attributes.map((attribute) => (
+                       <label key={attribute.attributeId}><span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">{attribute.attributeTitle ?? `ویژگی ${attribute.attributeId}`}</span>
+                         <AttributeValueField attribute={attribute} value={attributeValues[attribute.attributeId] ?? ""} onChange={(value) => setAttributeValues((values) => ({ ...values, [attribute.attributeId]: value }))} />
+                       </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </form>
+          )}
+
+          {step === 2 && (
+            <section>
+              <div className="flex items-start gap-3 rounded-2xl border border-green-200 bg-green-50 p-4 dark:border-green-900/50 dark:bg-green-950/30"><span className="material-symbols-outlined text-green-600 dark:text-green-400">check_circle</span><div><h3 className="font-semibold text-green-900 dark:text-green-200">{isEditing ? "جزئیات محصول به‌روزرسانی شد" : "محصول ایجاد شد"}</h3><p className="mt-0.5 text-sm text-green-700 dark:text-green-300">{isEditing ? "تصویر اصلی را از بین تصاویر فعلی یا جدید انتخاب کنید. افزودن تصویر اختیاری است." : "افزودن تصویر اختیاری است؛ در صورت افزودن، یک تصویر اصلی انتخاب کنید."}</p></div></div>
+              <label className="mt-6 flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50 p-6 text-center transition-colors hover:border-primary-400 hover:bg-primary-50/50 focus-within:ring-2 focus-within:ring-primary-500 dark:border-gray-700 dark:bg-gray-950 dark:hover:border-primary-600 dark:hover:bg-primary-950/20">
+                <span className="flex size-12 items-center justify-center rounded-full bg-white text-primary-600 shadow-sm dark:bg-gray-800 dark:text-primary-400"><span className="material-symbols-outlined">add_photo_alternate</span></span>
+                <span className="mt-3 text-sm font-semibold text-gray-800 dark:text-gray-200">انتخاب تصاویر محصول</span><span className="mt-1 text-xs text-gray-500 dark:text-gray-400">فقط WebP، JPG یا PNG — یک یا چند فایل انتخاب کنید</span>
+                <input type="file" accept=".webp,.jpg,.jpeg,.png,image/webp,image/jpeg,image/png" multiple onChange={selectImages} className="sr-only" />
+              </label>
+              {orderedImages.length > 0 && (
+                <div className="mt-6">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white">تصاویر محصول</h4>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">برای تغییر ترتیب، تصویر را بکشید و روی تصویر دیگر رها کنید.</span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                    {orderedImages.map((item, index) => {
+                      const isDeleted =
+                        item.kind === "existing" && deletedImageIds.includes(item.image.id);
+                      const isSelectedMain =
+                        item.kind === "existing"
+                          ? mainExistingId === item.image.id
+                          : mainImageId === item.image.id;
+                      const src =
+                        item.kind === "existing"
+                          ? resolveProductImageUrl(item.image) ?? undefined
+                          : item.image.previewUrl;
+                      const alt = item.kind === "existing" ? item.image.name : item.image.file.name;
+
+                      return (
+                        <div
+                          key={item.key}
+                          draggable
+                          onDragStart={handleImageDragStart(item.key)}
+                          onDragOver={handleImageDragOver(item.key)}
+                          onDrop={handleImageDrop(item.key)}
+                          onDragEnd={handleImageDragEnd}
+                          className={`group relative cursor-grab overflow-hidden rounded-2xl border-2 bg-gray-100 active:cursor-grabbing dark:bg-gray-800 ${!isDeleted && isSelectedMain ? "border-primary-500" : "border-transparent"} ${isDeleted ? "opacity-50" : ""} ${draggingImageKey === item.key ? "opacity-40" : ""} ${dragOverImageKey === item.key ? "ring-2 ring-primary-400 ring-offset-2 ring-offset-white dark:ring-offset-gray-900" : ""}`}
+                        >
+                          <img src={src} alt={alt} className="aspect-square w-full object-cover" draggable={false} />
+                          <span className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-lg bg-gray-950/70 text-xs font-semibold text-white backdrop-blur-sm">{index + 1}</span>
+                          {item.kind === "existing" ? (
+                            <button type="button" onClick={() => toggleExistingImageDeletion(item.image)} className={`absolute left-2 top-2 flex size-9 items-center justify-center rounded-lg text-white backdrop-blur-sm ${isDeleted ? "bg-green-600 hover:bg-green-700" : "bg-gray-950/70 hover:bg-red-600"}`} aria-label={isDeleted ? `نگه‌داشتن ${item.image.name}` : `حذف ${item.image.name}`}><span className="material-symbols-outlined text-[19px]">{isDeleted ? "undo" : "delete"}</span></button>
+                          ) : (
+                            <button type="button" onClick={() => removeImage(item.image.id)} className="absolute left-2 top-2 flex size-9 items-center justify-center rounded-lg bg-gray-950/70 text-white backdrop-blur-sm hover:bg-red-600" aria-label={`حذف ${item.image.file.name}`}><span className="material-symbols-outlined text-[19px]">delete</span></button>
+                          )}
+                          {isDeleted ? (
+                            <span className="absolute inset-x-2 bottom-2 flex min-h-10 items-center rounded-xl bg-gray-950/75 px-3 text-xs font-medium text-white backdrop-blur-sm">حذف خواهد شد</span>
+                          ) : (
+                            <label className="absolute inset-x-2 bottom-2 flex min-h-10 cursor-pointer items-center gap-2 rounded-xl bg-gray-950/75 px-3 text-xs font-medium text-white backdrop-blur-sm">
+                              <input type="radio" name="main-image" checked={isSelectedMain} onChange={() => item.kind === "existing" ? selectExistingMain(item.image.id) : selectNewMain(item.image.id)} className="size-4 accent-primary-600" />
+                              {isSelectedMain ? "تصویر اصلی" : "اصلی شود"}
+                            </label>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
+        </div>
+
+        <footer className="mt-auto flex flex-col-reverse gap-2 border-t border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900 sm:flex-row sm:items-center sm:justify-between sm:px-7 sm:py-4">
+          <button type="button" onClick={step === 0 || step === 2 ? onClose : () => setStep(0)} className="min-h-11 w-full rounded-xl px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-gray-300 dark:hover:bg-gray-800 sm:w-auto">{step === 0 || step === 2 ? "لغو" : "بازگشت"}</button>
+          <div className="flex w-full items-center gap-2 sm:w-auto [&>button]:w-full sm:[&>button]:w-auto">
+            {step === 0 && <button type="button" onClick={() => void loadAttributes()} disabled={categoryId === null || loading} className="flex min-h-11 items-center gap-2 rounded-xl bg-primary-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-gray-900">ادامه<span className="material-symbols-outlined text-[19px]">arrow_back</span></button>}
+            {step === 1 && <button type="submit" form="product-details-form" disabled={!canSubmitDetails || submitting || loading} className="flex min-h-11 items-center gap-2 rounded-xl bg-primary-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-gray-900">{(submitting || loading) && <span className="material-symbols-outlined animate-spin text-[19px]">progress_activity</span>}{submitting ? "در حال ذخیره..." : loading ? "در حال بارگذاری..." : isEditing ? "ذخیره و مدیریت تصاویر" : "ایجاد محصول"}</button>}
+            {step === 2 && <button type="button" onClick={() => void finish()} disabled={uploading} className="flex min-h-11 items-center gap-2 rounded-xl bg-primary-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-gray-900">{uploading && <span className="material-symbols-outlined animate-spin text-[19px]">progress_activity</span>}{uploading ? "در حال ذخیره..." : hasImageWork ? (isEditing ? "ذخیره تغییرات تصویر" : "بارگذاری و اتمام") : "ثبت و بستن"}</button>}
+          </div>
+        </footer>
+      </div>
+
+      <SellerPickerModal open={sellerModalOpen} selectedId={sellerId} onSelect={setSellerId} onClose={() => setSellerModalOpen(false)} />
+
+      <ConfirmDialog
+        open={variantConfirmIndex !== null}
+        title="حذف تنوع"
+        message="آیا از حذف این تنوع اطمینان دارید؟ پس از ذخیره محصول، این تنوع حذف خواهد شد."
+        confirmLabel="حذف"
+        onConfirm={confirmRemoveVariant}
+        onCancel={() => setVariantConfirmIndex(null)}
+      />
+
+      <ConfirmDialog
+        open={bulkConfirmKind !== null}
+        title={bulkConfirmKind === "price" ? "اعمال قیمت روی همه تنوع‌ها" : "تنظیم موجودی همه تنوع‌ها"}
+        message={
+          bulkConfirmKind === "price"
+            ? `قیمت همهٔ ${productVariants.length} تنوع به ${formatPrice(bulkPriceValue ?? 0)} تومان تغییر می‌کند.`
+            : `موجودی همهٔ ${productVariants.length} تنوع به ${formatPrice(bulkStockValue ?? 0)} عدد تنظیم می‌شود.`
+        }
+        confirmLabel="اعمال شود"
+        danger={false}
+        onConfirm={confirmBulkApply}
+        onCancel={() => setBulkConfirmKind(null)}
+      />
+    </div>
+  );
+}

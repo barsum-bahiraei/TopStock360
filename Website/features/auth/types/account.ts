@@ -1,0 +1,69 @@
+export type Gender = 0 | 1 | 2;
+
+export enum Role {
+  Owner = "Owner",
+  Seller = "Seller",
+  User = "User",
+}
+
+export type AccountUser = {
+  firstName: string | null;
+  lastName: string | null;
+  email: string;
+  phoneNumber: string | null;
+  nationalCode: string | null;
+  birthDate: string | null;
+  gender: Gender;
+  address: string | null;
+  postalCode: string | null;
+  provinceId: number | null;
+  provinceName: string | null;
+  cityId: number | null;
+  cityName: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  isEmailVerified: boolean;
+  roles: string[];
+};
+
+export type UpdateUserProfileInput = {
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  address: string | null;
+  postalCode: string | null;
+  provinceId: number;
+  cityId: number;
+  latitude: number | null;
+  longitude: number | null;
+  gender: Gender;
+  nationalCode: string | null;
+  birthDate: string | null;
+};
+
+export type UpdatedUserProfile = UpdateUserProfileInput & {
+  provinceName: string;
+  cityName: string;
+};
+
+export type AuthenticatedUser = AccountUser & {
+  token: string;
+  expiresAt: string;
+};
+
+export function isUserRole(user?: AccountUser): boolean {
+  return Boolean(user?.roles?.includes(Role.User));
+}
+
+export function canAccessDashboard(user?: AccountUser): boolean {
+  return Boolean(user?.roles?.some((role) => role === Role.Owner || role === Role.Seller));
+}
+
+export type OtpSendInput = {
+  phoneNumber: string;
+};
+
+export type OtpVerifyInput = {
+  phoneNumber: string;
+  code: string;
+};

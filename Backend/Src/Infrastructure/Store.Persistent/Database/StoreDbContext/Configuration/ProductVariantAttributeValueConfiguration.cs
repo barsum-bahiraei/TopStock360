@@ -1,0 +1,26 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Store.Domain.Products;
+
+namespace Store.Persistent.Database.StoreDbContext.Configuration;
+
+public class ProductVariantAttributeValueConfiguration : IEntityTypeConfiguration<ProductVariantAttributeValueEntity>
+{
+    public void Configure(EntityTypeBuilder<ProductVariantAttributeValueEntity> builder)
+    {
+        builder.ToTable("ProductVariantAttributeValues");
+        builder.Property(x => x.Size).HasMaxLength(50);
+        builder.Property(x => x.Model).HasMaxLength(100);
+        builder.Property(x => x.ColorName).HasMaxLength(100);
+        builder.Property(x => x.ColorCode).HasMaxLength(32);
+
+        builder.HasOne(x => x.ProductVariant)
+            .WithMany(x => x.AttributeValues)
+            .HasForeignKey(x => x.ProductVariantId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(x => new { x.ProductVariantId, x.Size, x.Model, x.ColorName, x.ColorCode })
+            .IsUnique()
+            .AreNullsDistinct(false);
+    }
+}

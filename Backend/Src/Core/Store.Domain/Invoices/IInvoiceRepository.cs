@@ -1,0 +1,31 @@
+using Store.Domain.Accounts;
+using Store.Domain.Sellers.Models.Output;
+
+namespace Store.Domain.Invoices;
+
+public interface IInvoiceRepository
+{
+    Task<List<CartEntity>> CartListAsync(int userId, CancellationToken cancellation);
+    Task<CartEntity?> CartGetAsync(int id, int userId, CancellationToken cancellation);
+    Task<CartEntity?> CartAddAsync(CartEntity input, CancellationToken cancellation);
+    Task<CartEntity> CartUpdateAsync(CartEntity input, CancellationToken cancellation);
+    Task CartDeleteAsync(CartEntity input, CancellationToken cancellation);
+    Task<UserDiscountCodeEntity?> UserDiscountCodeGetAsync(int userId, string code,
+        CancellationToken cancellation);
+    Task<(InvoiceEntity Invoice, PaymentEntity Payment)> CheckoutCreateAsync(
+        InvoiceEntity invoice, PaymentEntity payment, IReadOnlyCollection<CartEntity> carts,
+        CancellationToken cancellation);
+    Task<InvoiceEntity?> GetAsync(int id, int userId, CancellationToken cancellation);
+    Task<PaymentEntity> PaymentCreateAsync(PaymentEntity input, CancellationToken cancellation);
+    Task<PaymentEntity?> PaymentGetByOrderIdAsync(long orderId, CancellationToken cancellation);
+    Task SavePaymentAsync(PaymentEntity payment, CancellationToken cancellation);
+    Task CompletePaymentAsync(PaymentEntity payment, CancellationToken cancellation);
+
+    Task<List<InvoiceEntity>> ListAsync(int userId, CancellationToken cancellation);
+    Task<List<InvoiceEntity>> SellerListAsync(int userId, DateTime? from, DateTime? to,
+        CancellationToken cancellation);
+    Task<List<SellerOrderAttentionListOutput>> SellerOrdersAttentionListAsync(int userId, int? invoiceId, DateTime? from,
+        DateTime? to, IReadOnlyCollection<PaymentStatusEnum> paymentStatuses, CancellationToken cancellation);
+    Task<InvoiceEntity?> SellerGetAsync(int id, int userId, CancellationToken cancellation);
+    Task<InvoiceEntity> UpdateAsync(InvoiceEntity input, CancellationToken cancellation);
+}

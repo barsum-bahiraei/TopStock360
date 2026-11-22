@@ -1,0 +1,198 @@
+export interface SellerDateRange {
+  from?: string;
+  to?: string;
+}
+
+export interface SellerPageParams {
+  page?: number;
+  pageSize?: number;
+}
+
+export interface PagedResult<T> {
+  totalCount: number;
+  items: T[];
+}
+
+export interface SellerDashboardStats {
+  totalSales: number;
+  orderCount: number;
+  itemsSoldCount: number;
+  averageOrderValue: number;
+  completedOrderCount: number;
+  cancelledOrderCount: number;
+  discountAmount: number;
+}
+
+export type SalesChartGroupBy = "Day" | "Week" | "Month";
+
+export interface SalesChartPoint {
+  date: string;
+  salesAmount: number;
+  orderCount: number;
+  itemsSoldCount: number;
+}
+
+export interface TopProductItem {
+  productId: number;
+  productName: string;
+  unitsSold: number;
+  salesAmount: number;
+}
+
+export interface VariantValueOutput {
+  id: number;
+  size: string | null;
+  model: string | null;
+  colorName: string | null;
+  colorCode: string | null;
+}
+
+export interface TopVariantItem {
+  productVariantId: number;
+  productId: number;
+  productName: string;
+  price: number;
+  stock: number;
+  values: VariantValueOutput[];
+  unitsSold: number;
+  salesAmount: number;
+}
+
+export enum PaymentStatus {
+  New = 0,
+  ProcessingPayment = 1,
+  PaymentCompleted = 2,
+  Preparing = 3,
+  ReadyForShipment = 4,
+  Shipping = 5,
+  Delivered = 6,
+  Cancelled = 7,
+  Failed = 8,
+}
+
+export const paymentStatusLabels: Record<number, string> = {
+  [PaymentStatus.New]: "جدید",
+  [PaymentStatus.ProcessingPayment]: "در حال پرداخت",
+  [PaymentStatus.PaymentCompleted]: "پرداخت انجام شد",
+  [PaymentStatus.Preparing]: "در حال آماده‌سازی",
+  [PaymentStatus.ReadyForShipment]: "آماده ارسال",
+  [PaymentStatus.Shipping]: "در حال ارسال",
+  [PaymentStatus.Delivered]: "تحویل شد",
+  [PaymentStatus.Cancelled]: "لغو شد",
+  [PaymentStatus.Failed]: "ناموفق",
+};
+
+export const sellerSettableStatuses: PaymentStatus[] = [
+  PaymentStatus.Preparing,
+  PaymentStatus.ReadyForShipment,
+  PaymentStatus.Shipping,
+  PaymentStatus.Delivered,
+];
+
+export interface OrderStatusCountItem {
+  paymentStatus: number;
+  count: number;
+}
+
+export interface LowStockItem {
+  productVariantId: number;
+  productId: number;
+  productName: string;
+  price: number;
+  values: VariantValueOutput[];
+  stock: number;
+}
+
+export interface ProductWithoutSalesItem {
+  productId: number;
+  productName: string;
+}
+
+export interface CategorySalesItem {
+  categoryId: number;
+  categoryName: string;
+  salesAmount: number;
+  unitsSold: number;
+  orderCount: number;
+}
+
+export interface DiscountStatisticsItem {
+  discountCodeId: number;
+  code: string;
+  usageCount: number;
+  discountAmount: number;
+  salesAmount: number;
+}
+
+export interface OrderAttentionItem {
+  id: number;
+  totalPrice: number;
+  totalCount: number;
+  createdAt: string;
+  updatedAt: string;
+  paymentStatus: number;
+  paymentMethod: number;
+  deliveryMethod: number;
+  address: string;
+}
+
+export interface OrderStatusUpdateInput {
+  PaymentStatus: PaymentStatus;
+}
+
+export interface OrderStatusUpdateOutput {
+  id: number;
+  paymentStatus: number;
+}
+
+export const paymentMethodLabels: Record<number, string> = {
+  0: "نقدی",
+  1: "آنلاین",
+  2: "چک",
+};
+
+export const deliveryMethodLabels: Record<number, string> = {
+  0: "دریافت حضوری",
+  2: "تیپاکس",
+  3: "پست",
+};
+
+export interface SellerOrderCustomer {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  address: string | null;
+  provinceName: string | null;
+  cityName: string | null;
+  postalCode: string | null;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+export interface SellerOrderItem {
+  id: number;
+  productId: number;
+  productName: string;
+  categoryName: string;
+  productVariantId: number;
+  productCount: number;
+  productPrice: number;
+  totalPrice: number;
+  imageUrl: string | null;
+  values: VariantValueOutput[];
+}
+
+export interface SellerOrderDetail {
+  id: number;
+  totalPrice: number;
+  totalCount: number;
+  createdAt: string;
+  updatedAt: string;
+  paymentStatus: number;
+  paymentMethod: number;
+  deliveryMethod: number;
+  refId: string | null;
+  saleReferenceId: number | null;
+  customer: SellerOrderCustomer;
+  items: SellerOrderItem[];
+}
