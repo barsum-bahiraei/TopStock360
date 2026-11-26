@@ -21,7 +21,7 @@ services:
       - store
 
   minio:
-    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
+    image: cgr.dev/chainguard/minio@sha256:b9b1cce81a4a6cc9bf250e68d621cc0b9fb8ed15aefe18fcd1840525eab6a81a
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
