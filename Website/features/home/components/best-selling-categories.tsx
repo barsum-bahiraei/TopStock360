@@ -8,32 +8,32 @@ import type { Category } from "@/features/categories/types/category";
 
 const categoryImages: Record<number, string> = {
   1: "/images/home/laptop-workspace.jpg",
-  2: "/images/home/laptop-premium.jpg",
+  2: "/images/home/laptop-warm.jpg",
   5: "/images/home/hero-headphones.jpg",
   6: "/images/home/hero-headphones.jpg",
-  14: "/images/home/laptop-office.jpg",
-  15: "/images/home/laptop-selection.jpg",
-  16: "/images/home/laptop-selection.jpg",
+  14: "/images/home/laptop-gold.jpg",
+  15: "/images/home/laptop-warm.jpg",
+  16: "/images/home/laptop-warm.jpg",
   20: "/images/home/laptop-workspace.jpg",
-  23: "/images/home/laptop-office.jpg",
-  28: "/images/home/laptop-office.jpg",
-  35: "/images/home/laptop-premium.jpg",
-  40: "/images/home/laptop-premium.jpg",
-  41: "/images/home/laptop-premium.jpg",
+  23: "/images/home/laptop-gold.jpg",
+  28: "/images/home/laptop-gold.jpg",
+  35: "/images/home/laptop-warm.jpg",
+  40: "/images/home/laptop-warm.jpg",
+  41: "/images/home/laptop-warm.jpg",
   43: "/images/home/hero-headphones.jpg",
   44: "/images/home/hero-headphones.jpg",
   51: "/images/home/laptop-workspace.jpg",
   52: "/images/home/laptop-workspace.jpg",
   53: "/images/home/laptop-workspace.jpg",
-  60: "/images/home/laptop-selection.jpg",
-  65: "/images/home/laptop-office.jpg",
+  60: "/images/home/laptop-warm.jpg",
+  65: "/images/home/laptop-gold.jpg",
   71: "/images/home/hero-headphones.jpg",
   72: "/images/home/hero-headphones.jpg",
-  78: "/images/home/laptop-selection.jpg",
-  81: "/images/home/laptop-selection.jpg",
+  78: "/images/home/laptop-warm.jpg",
+  81: "/images/home/laptop-warm.jpg",
 };
 
-const fallbackImage = "/images/home/laptop-selection.jpg";
+const fallbackImage = "/images/home/laptop-warm.jpg";
 
 function collectCategoryImages(categories: Category[], inheritedImage = fallbackImage): Record<number, string> {
   return categories.reduce<Record<number, string>>((images, category) => {

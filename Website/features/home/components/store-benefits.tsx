@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { whatsappSupportNumber, whatsappSupportUrl } from "@/features/layout/utils/social-links";
 
 const storeBenefits = [
@@ -14,7 +13,7 @@ export function StoreBenefits() {
       {storeBenefits.map((benefit) => {
         const isSupport = benefit.icon === "support_agent";
         const content = <>
-          {isSupport ? <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-surface p-2"><Image src="/images/social/whatsapp.svg" alt="" width={40} height={40} className="size-9 object-contain" /></span> : <span className="material-symbols-rounded shrink-0 text-4xl text-primary-foreground" aria-hidden="true">{benefit.icon}</span>}
+          <span className="material-symbols-rounded shrink-0 text-4xl text-primary-foreground" aria-hidden="true">{benefit.icon}</span>
           <span className="text-right">
             <span className="block text-sm font-black">{benefit.title}</span>
             <span className="mt-1 block text-xs leading-5 text-secondary-foreground/75">{benefit.description}</span>

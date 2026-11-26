@@ -8,7 +8,6 @@ export type HeroSlide = {
   href?: string;
   external?: boolean;
   linkLabel?: string;
-  showInstagramLogo?: boolean;
 };
 
 export const heroSlides: HeroSlide[] = [
@@ -30,14 +29,14 @@ export const heroSlides: HeroSlide[] = [
     eyebrow: "لپ‌تاپ‌های حرفه‌ای",
     title: "قدرت بیشتر برای کار و بازی",
     description: "مدل مناسب برنامه‌نویسی، طراحی و گیمینگ را با مشخصات دقیق مقایسه و انتخاب کن.",
-    image: "/images/home/laptop-premium.jpg",
+    image: "/images/home/laptop-warm.jpg",
     imageAlt: "لپ‌تاپ حرفه‌ای با نورپردازی مدرن",
   },
   {
     eyebrow: "لوازم جانبی دیجیتال",
     title: "میز کارت را کامل کن",
     description: "ماوس، کیبورد، شارژر و لوازم جانبی کاربردی را برای یک تجربه سریع‌تر و راحت‌تر انتخاب کنید.",
-    image: "/images/home/laptop-office.jpg",
+    image: "/images/home/laptop-gold.jpg",
     imageAlt: "لپ‌تاپ مناسب کار و لوازم جانبی دیجیتال",
   },
 ];
