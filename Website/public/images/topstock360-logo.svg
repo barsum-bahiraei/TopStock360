@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 170" role="img" aria-labelledby="title">
+  <title id="title">TopStock360</title>
+  <circle cx="85" cy="85" r="82" fill="#ef4056"/>
+  <rect x="42" y="45" width="86" height="55" rx="7" fill="none" stroke="#fff" stroke-width="8"/>
+  <path d="M31 112h108l-9 14H40z" fill="#fff"/>
+  <text x="85" y="150" fill="#fff" font-family="Arial, sans-serif" font-size="19" font-weight="700" text-anchor="middle">TS360</text>
+</svg>
