@@ -30,8 +30,8 @@ jobs:
           docker tag postgres:17-alpine ghcr.io/${{ github.repository_owner }}/topstock360-postgres:17-alpine
           docker push ghcr.io/${{ github.repository_owner }}/topstock360-postgres:17-alpine
 
-          docker pull quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
-          docker tag quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z ghcr.io/${{ github.repository_owner }}/topstock360-minio:RELEASE.2025-04-22T22-12-26Z
+          docker pull minio/minio:RELEASE.2025-04-22T22-12-26Z
+          docker tag minio/minio:RELEASE.2025-04-22T22-12-26Z ghcr.io/${{ github.repository_owner }}/topstock360-minio:RELEASE.2025-04-22T22-12-26Z
           docker push ghcr.io/${{ github.repository_owner }}/topstock360-minio:RELEASE.2025-04-22T22-12-26Z
 
   publish:
