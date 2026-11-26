@@ -2,9 +2,19 @@ export const AUTH_TOKEN_KEY = "store.auth.token";
 export const AUTH_TOKEN_EVENT = "store-auth-token-change";
 
 const FALLBACK_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
-const SHARED_COOKIE_ATTRIBUTES = process.env.NODE_ENV === "production"
-  ? "; domain=zaryvan.com; secure"
+const CURRENT_HOSTNAME = typeof window !== "undefined" ? window.location.hostname : "";
+const COOKIE_DOMAIN_ATTRIBUTE = CURRENT_HOSTNAME &&
+  CURRENT_HOSTNAME !== "localhost" &&
+  !CURRENT_HOSTNAME.includes(":") &&
+  !/^\d{1,3}(?:\.\d{1,3}){3}$/.test(CURRENT_HOSTNAME)
+  ? `; domain=${CURRENT_HOSTNAME}`
   : "";
+const SHARED_COOKIE_ATTRIBUTES =
+  `${COOKIE_DOMAIN_ATTRIBUTE}${
+    typeof window !== "undefined" && window.location.protocol === "https:"
+      ? "; secure"
+      : ""
+  }`;
 
 type JwtPayload = {
   exp?: unknown;

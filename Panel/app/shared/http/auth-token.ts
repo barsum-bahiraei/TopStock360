@@ -2,9 +2,19 @@ export const AUTH_TOKEN_KEY = "store.auth.token";
 
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 const AUTH_TOKEN_CLEARED_EVENT = "store:auth-token-cleared";
-const SHARED_COOKIE_ATTRIBUTES = import.meta.env.PROD
-  ? "; domain=zaryvan.com; secure"
+const CURRENT_HOSTNAME = typeof window !== "undefined" ? window.location.hostname : "";
+const COOKIE_DOMAIN_ATTRIBUTE = CURRENT_HOSTNAME &&
+  CURRENT_HOSTNAME !== "localhost" &&
+  !CURRENT_HOSTNAME.includes(":") &&
+  !/^\d{1,3}(?:\.\d{1,3}){3}$/.test(CURRENT_HOSTNAME)
+  ? `; domain=${CURRENT_HOSTNAME}`
   : "";
+const SHARED_COOKIE_ATTRIBUTES =
+  `${COOKIE_DOMAIN_ATTRIBUTE}${
+    typeof window !== "undefined" && window.location.protocol === "https:"
+      ? "; secure"
+      : ""
+  }`;
 
 function readTokenCookie(): string | null {
   if (typeof document === "undefined") return null;

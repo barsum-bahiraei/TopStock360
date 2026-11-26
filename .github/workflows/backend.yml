@@ -1,0 +1,21 @@
+name: Publish backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Backend/**"
+      - "deploy/**"
+      - ".github/workflows/backend.yml"
+      - ".github/workflows/_publish.yml"
+  workflow_dispatch:
+
+jobs:
+  publish:
+    uses: ./.github/workflows/_publish.yml
+    with:
+      service: backend
+      context: Backend
+      image: topstock360-backend
+      image-tag-variable: BACKEND_IMAGE_TAG
+    secrets: inherit
