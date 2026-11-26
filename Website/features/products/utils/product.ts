@@ -140,7 +140,7 @@ export function matchVariantBySelection(
 export function getProductImageUrl(url?: string | null) {
   if (!url) return null;
   if (/^https?:\/\//i.test(url)) return url;
-  const baseUrl = process.env.NEXT_PUBLIC_MINIO_BASE_URL?.replace(/\/$/, "");
+  const baseUrl = normalizePublicUrl(process.env.NEXT_PUBLIC_MINIO_BASE_URL)?.replace(/\/$/, "");
   return baseUrl ? `${baseUrl}/${url.replace(/^\//, "")}` : null;
 }
 
@@ -175,3 +175,4 @@ export function formatProductAttributeValue(value: string, type: ProductAttribut
 
   return trimmedValue;
 }
+import { normalizePublicUrl } from "@/lib/public-url";

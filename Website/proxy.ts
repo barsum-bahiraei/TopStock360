@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { normalizePublicUrl } from "./lib/public-url";
 
 type ProductSearchItem = {
   id: number;
@@ -18,7 +19,7 @@ type CategoryRedirect = {
   needles: string[];
 };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://5.10.248.182:8080/api";
+const API_BASE_URL = normalizePublicUrl(process.env.NEXT_PUBLIC_API_BASE_URL, "http://5.10.249.19:8080");
 
 const LEGACY_PAGE_REDIRECTS: Record<string, string> = {
   "dashboard": "/account",
