@@ -6,7 +6,7 @@ import { StoreHeader } from "@/features/categories/components/store-header";
 
 export const metadata: Metadata = {
   title: "درباره ما",
-  description: "آشنایی با تاپ استوک ۳۶۰؛ تامین‌کننده محصولات ورزشی، کوهنوردی و تجهیزات فنی از سال ۱۳۹۰.",
+  description: "آشنایی با تاپ استوک ۳۶۰؛ فروشگاه تخصصی لپ‌تاپ، هندزفری و لوازم دیجیتال.",
 };
 
 export default function AboutPage() {
@@ -23,7 +23,7 @@ export default function AboutPage() {
               همراه مطمئن ماجراجویی‌های شما
             </h1>
             <p className="mt-5 text-base leading-8 text-muted-foreground sm:text-lg">
-              سال‌ها تجربه، انتخاب دقیق و عشق به طبیعت؛ این همان چیزی است که تاپ استوک ۳۶۰ را ساخته است.
+              انتخاب دقیق، اطلاعات شفاف و خرید مطمئن؛ این همان چیزی است که تاپ استوک ۳۶۰ را ساخته است.
             </p>
           </div>
 
@@ -35,14 +35,14 @@ export default function AboutPage() {
               <div>
                 <p className="text-sm font-bold text-accent">از سال ۱۳۹۰ تا امروز</p>
                 <h2 className="mt-3 text-2xl font-black leading-10 sm:text-3xl">
-                  تجربه‌ای که از دل کوه و طبیعت آمده است
+                  تجربه‌ای برای انتخاب بهتر تکنولوژی
                 </h2>
                 <div className="mt-6 space-y-5 text-sm leading-8 text-secondary-foreground/85 sm:text-base sm:leading-9">
                   <p>
-                    تاپ استوک ۳۶۰ فعالیت خود را از سال ۱۳۹۰ در عرصه تأمین محصولات ورزشی و کوهنوردی آغاز کرد؛ از سنگ‌نوردی و غارنوردی گرفته تا دوچرخه‌سواری کوهستان و دیگر تجهیزات تخصصی طبیعت‌گردی.
+                    تاپ استوک ۳۶۰ با تمرکز بر لپ‌تاپ، هندزفری و لوازم جانبی دیجیتال فعالیت می‌کند تا انتخاب میان مدل‌ها و مشخصات فنی برای شما ساده‌تر شود.
                   </p>
                   <p>
-                    در طول این سال‌ها، با شناخت دقیق نیازهای ورزشکاران و علاقه‌مندان به طبیعت، تلاش کرده‌ایم مجموعه‌ای از اکسسوری‌های کاربردی و ابزارآلات فنی درجه‌یک بازار ایران را با وسواس و دقت در اختیار شما قرار دهیم.
+                    با شناخت نیاز کاربران روزمره، دانشجویان، گیمرها و حرفه‌ای‌ها، مجموعه‌ای از محصولات کاربردی و معتبر بازار را با دقت در اختیار شما قرار می‌دهیم.
                   </p>
                   <p>
                     برای ما رضایت مشتری فقط یک شعار نیست؛ تاپ استوک ۳۶۰ همواره کوشیده است با ارائه محصولاتی باکیفیت و دارای ضمانت اصالت، اعتماد شما را به تجربه‌ای ماندگار تبدیل کند.
@@ -51,14 +51,14 @@ export default function AboutPage() {
               </div>
 
               <div className="mx-auto flex size-44 items-center justify-center rounded-full border border-accent/55 bg-background/10 p-4 shadow-xl shadow-black/15 sm:size-52">
-                <Image src="/images/zaryvan-logo.png" alt="لوگوی تاپ استوک ۳۶۰" width={208} height={208} className="size-full rounded-full object-contain" priority />
+                <Image src="/images/topstock360-logo.png" alt="لوگوی تاپ استوک ۳۶۰" width={208} height={208} className="size-full rounded-full object-contain" priority />
               </div>
             </div>
           </section>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {[
-              ["تجربه و تخصص", "بیش از یک دهه همراهی با جامعه ورزش و طبیعت‌گردی"],
+              ["تجربه و تخصص", "راهنمایی دقیق برای انتخاب محصولات دیجیتال"],
               ["انتخاب مطمئن", "تمرکز بر کیفیت، کاربرد و اصالت کالا"],
               ["همراه شما", "تلاش برای ساختن تجربه‌ای بهتر پیش از خرید و پس از آن"],
             ].map(([title, description]) => (

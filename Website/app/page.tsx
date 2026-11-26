@@ -10,8 +10,8 @@ import { StoreFooter } from "@/features/layout/components/store-footer";
 import { StoreBenefits } from "@/features/home/components/store-benefits";
 
 export const metadata: Metadata = {
-  title: { absolute: "تاپ استوک ۳۶۰ | تجهیزات طبیعت‌گردی" },
-  description: "خرید لوازم کمپینگ، کوه‌نوردی و تجهیزات طبیعت‌گردی از فروشگاه تاپ استوک ۳۶۰.",
+  title: { absolute: "تاپ استوک ۳۶۰ | لپ‌تاپ و لوازم دیجیتال" },
+  description: "خرید لپ‌تاپ، هندزفری و لوازم جانبی دیجیتال از فروشگاه تاپ استوک ۳۶۰.",
 };
 
 export default function Home() {

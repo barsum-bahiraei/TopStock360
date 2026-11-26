@@ -22,10 +22,10 @@ export const metadata: Metadata = {
     default: "تاپ استوک ۳۶۰",
     template: "%s | تاپ استوک ۳۶۰",
   },
-  description: "خرید لوازم کمپینگ و کوه‌نوردی از فروشگاه تاپ استوک ۳۶۰.",
+  description: "خرید لپ‌تاپ، هندزفری و لوازم دیجیتال از فروشگاه تاپ استوک ۳۶۰.",
   icons: {
-    icon: "/images/zaryvan-logo.png",
-    apple: "/images/zaryvan-logo.png",
+    icon: "/images/topstock360-logo.png",
+    apple: "/images/topstock360-logo.png",
   },
 };
 
