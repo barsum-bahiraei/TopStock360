@@ -10,26 +10,26 @@ export const metadata: Metadata = {
 
 const audiences = [
   {
-    icon: "fitness_center",
-    title: "مربیان باشگاه",
-    description: "اگر با کاربران لپ‌تاپ و لوازم دیجیتال در ارتباط هستید، می‌توانید تاپ استوک ۳۶۰ را به مخاطبان خود معرفی کنید.",
+    icon: "campaign",
+    title: "تولیدکنندگان محتوا",
+    description: "اگر درباره لپ‌تاپ، گیمینگ یا تکنولوژی محتوا تولید می‌کنید، محصولات مناسب را به مخاطبان خود معرفی کنید.",
   },
   {
-    icon: "hiking",
-    title: "تورلیدرها",
-    description: "اگر در حوزه تکنولوژی، آموزش یا فروش فعالیت دارید، این همکاری می‌تواند مخاطبان شما را به انتخاب مناسب‌تر نزدیک کند.",
+    icon: "storefront",
+    title: "فروشندگان و همکاران تجاری",
+    description: "برای تأمین لپ‌تاپ و لوازم دیجیتال، فروش سازمانی یا همکاری در فروش با تیم ما در ارتباط باشید.",
   },
   {
-    icon: "diversity_3",
-    title: "همراهان تاپ استوک ۳۶۰",
-    description: "اگر به هر شکلی می‌توانید تاپ استوک ۳۶۰ را به دوستان و جامعه اطراف خود معرفی کنید، از گفت‌وگو با شما خوشحال می‌شویم.",
+    icon: "corporate_fare",
+    title: "شرکت‌ها و مجموعه‌ها",
+    description: "خرید گروهی لپ‌تاپ و تجهیزات مورد نیاز تیم‌ها را با شرایط متناسب و مشاوره تخصصی انجام دهید.",
   },
 ] as const;
 
 const steps = [
-  ["۰۱", "با ما تماس بگیرید", "از طریق صفحه ارتباط با ما، موضوع همکاری و زمینه فعالیت خود را برای تیم پشتیبانی توضیح دهید."],
-  ["۰۲", "جامعه خود را معرفی کنید", "درباره باشگاه، تورها یا جمع دوستانی که با آن‌ها در ارتباط هستید، اطلاعات بیشتری در اختیار ما قرار دهید."],
-  ["۰۳", "باشگاه مشتریان خود را بسازید", "با معرفی دوستانتان، باشگاه مشتریان اختصاصی خود را شکل دهید و از مزایای همکاری با فروشگاه تاپ استوک ۳۶۰ برخوردار شوید."],
+  ["۰۱", "زمینه همکاری را مشخص کنید", "نیاز خود را برای همکاری در فروش، تأمین کالا، تولید محتوا یا خرید سازمانی با ما در میان بگذارید."],
+  ["۰۲", "مدل همکاری را انتخاب کنید", "تیم ما شرایط، گروه محصولات، شیوه سفارش و مزایای متناسب با فعالیت شما را پیشنهاد می‌دهد."],
+  ["۰۳", "فروش و همکاری را شروع کنید", "پس از هماهنگی نهایی، به محصولات و پشتیبانی لازم برای شروع یک همکاری شفاف و پایدار دسترسی خواهید داشت."],
 ] as const;
 
 export default function CooperationPage() {
@@ -43,10 +43,10 @@ export default function CooperationPage() {
           <header className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-black tracking-[0.18em] text-primary">همکاری با تاپ استوک ۳۶۰</p>
             <h1 className="mt-3 text-3xl font-black leading-tight tracking-[-0.04em] sm:text-5xl">
-              با هم، مسیرهای بیشتری را فتح می‌کنیم
+              فروش بیشتر، همکاری هوشمندتر
             </h1>
             <p className="mt-5 text-base leading-8 text-muted-foreground sm:text-lg">
-              اگر تولیدکننده محتوا، فروشنده یا یکی از فعالان حوزه تکنولوژی هستید و می‌توانید تاپ استوک ۳۶۰ را به مخاطبان خود معرفی کنید، مشتاق گفت‌وگو با شما هستیم.
+              برای همکاری در فروش لپ‌تاپ، تأمین تجهیزات دیجیتال، خرید سازمانی یا معرفی محصولات به مخاطبانتان، کنار شما هستیم.
             </p>
           </header>
 
@@ -56,15 +56,15 @@ export default function CooperationPage() {
 
             <div className="relative z-10 grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)] lg:items-center">
               <div>
-                <p className="text-sm font-bold text-accent">یک همکاری دوطرفه و ماندگار</p>
+                <p className="text-sm font-bold text-accent">یک همکاری شفاف و ماندگار</p>
                 <h2 className="mt-3 text-2xl font-black leading-10 sm:text-3xl">
-                  باشگاه مشتریان خودتان را با تاپ استوک ۳۶۰ بسازید
+                  شبکه فروش و تأمین خود را قوی‌تر کنید
                 </h2>
                 <p className="mt-5 text-sm leading-8 text-secondary-foreground/85 sm:text-base sm:leading-9">
-                  شما می‌توانید با معرفی دوستان و مخاطبانتان، باشگاه مشتریان اختصاصی خود را شکل دهید. این همکاری فرصتی است تا جامعه شما راحت‌تر به لپ‌تاپ، هندزفری و لوازم دیجیتال دسترسی داشته باشد و شما نیز از مزایای فروشگاه تاپ استوک ۳۶۰ بهره‌مند شوید.
+                  تاپ استوک ۳۶۰ برای فروشندگان، تولیدکنندگان محتوا و مجموعه‌هایی که به لپ‌تاپ، هندزفری و لوازم دیجیتال نیاز دارند، مدل همکاری متناسب ارائه می‌کند. هدف ما دسترسی ساده‌تر به کالای مناسب، اطلاعات دقیق و پشتیبانی قابل اتکاست.
                 </p>
                 <p className="mt-4 text-sm leading-8 text-secondary-foreground/70 sm:text-base">
-                  برای آشنایی با شیوه همکاری و دریافت جزئیات، کافی است با تیم پشتیبانی ما در تماس باشید.
+                  برای دریافت شرایط همکاری در فروش یا خرید سازمانی، کافی است زمینه فعالیت و نیاز خود را با تیم ما در میان بگذارید.
                 </p>
 
                 <Link href="/contact" className="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-6 text-sm font-black text-primary-foreground shadow-lg shadow-primary-shadow outline-none transition-[transform,background-color] hover:-translate-y-0.5 hover:bg-primary-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-secondary">
