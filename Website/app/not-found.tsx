@@ -30,7 +30,7 @@ export default function NotFound() {
           className="group inline-flex min-h-12 items-center gap-3 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background"
         >
           <Image src="/images/zaryvan-logo.png" alt="" width={48} height={48} className="size-12 rounded-full object-contain transition-transform duration-200 group-hover:-rotate-3" />
-          <span className="text-lg font-black tracking-[-0.04em]">لوازم کمپ و کوه‌نوردی زریوان</span>
+          <span className="text-lg font-black tracking-[-0.04em]">تاپ استوک ۳۶۰</span>
         </Link>
 
         <span className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-bold tracking-widest text-muted-foreground">

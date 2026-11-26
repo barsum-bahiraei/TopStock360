@@ -49,7 +49,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <nav aria-label="مسیر صفحه" className="flex flex-wrap items-center gap-2 text-xs font-bold text-muted-foreground">
             <Link href="/" className="transition-colors hover:text-primary">خانه</Link>
             <span aria-hidden="true">/</span>
-            <Link href="/blog-1" className="transition-colors hover:text-primary">مجله زریوان</Link>
+            <Link href="/blog-1" className="transition-colors hover:text-primary">مجله تاپ استوک ۳۶۰</Link>
             <span aria-hidden="true">/</span>
             <span className="text-foreground">{article.title}</span>
           </nav>

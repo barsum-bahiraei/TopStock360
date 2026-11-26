@@ -10,8 +10,8 @@ import { StoreFooter } from "@/features/layout/components/store-footer";
 import { StoreBenefits } from "@/features/home/components/store-benefits";
 
 export const metadata: Metadata = {
-  title: { absolute: "لوازم کمپ و کوه‌نوردی زریوان | تجهیزات طبیعت‌گردی" },
-  description: "خرید لوازم کمپینگ، کوه‌نوردی و تجهیزات طبیعت‌گردی از فروشگاه زریوان.",
+  title: { absolute: "تاپ استوک ۳۶۰ | تجهیزات طبیعت‌گردی" },
+  description: "خرید لوازم کمپینگ، کوه‌نوردی و تجهیزات طبیعت‌گردی از فروشگاه تاپ استوک ۳۶۰.",
 };
 
 export default function Home() {

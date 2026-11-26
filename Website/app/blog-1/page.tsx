@@ -6,8 +6,8 @@ import { StoreHeader } from "@/features/categories/components/store-header";
 import { articles, type Article } from "@/features/blog/data/articles";
 
 export const metadata: Metadata = {
-  title: "مجله زریوان",
-  description: "مقالات و راهنماهای کوهنوردی، صخره‌نوردی و طبیعت‌گردی در مجله زریوان.",
+  title: "مجله تاپ استوک ۳۶۰",
+  description: "مقالات و راهنماهای کوهنوردی، صخره‌نوردی و طبیعت‌گردی در مجله تاپ استوک ۳۶۰.",
 };
 
 function getArticleHref(article: Article) {
@@ -68,7 +68,7 @@ export default function BlogPage() {
             <span className="mx-auto inline-flex size-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary-shadow">
               <span className="material-symbols-rounded text-3xl" aria-hidden="true">auto_stories</span>
             </span>
-            <p className="mt-5 text-sm font-black tracking-[0.14em] text-primary">مجله زریوان</p>
+            <p className="mt-5 text-sm font-black tracking-[0.14em] text-primary">مجله تاپ استوک ۳۶۰</p>
             <h1 className="mt-3 text-3xl font-black leading-tight tracking-[-0.04em] sm:text-5xl">راهنمای کوهنوردی و طبیعت‌گردی</h1>
             <p className="mt-5 text-base leading-8 text-muted-foreground sm:text-lg">آموزش‌ها و راهنماهای کاربردی برای انتخاب تجهیزات، آمادگی بهتر و تجربه‌ای امن‌تر در طبیعت.</p>
           </header>
@@ -102,7 +102,7 @@ export default function BlogPage() {
           <section className="mt-12" aria-labelledby="articles-heading">
             <div className="flex items-end justify-between gap-4">
               <div>
-                <p className="text-sm font-black text-primary">دانستنی‌های زریوان</p>
+                <p className="text-sm font-black text-primary">دانستنی‌های تاپ استوک ۳۶۰</p>
                 <h2 id="articles-heading" className="mt-2 text-2xl font-black sm:text-3xl">آخرین مقاله‌ها</h2>
               </div>
               <span className="hidden text-sm font-bold text-muted-foreground sm:block">{remainingArticles.length.toLocaleString("fa-IR")} مقاله</span>

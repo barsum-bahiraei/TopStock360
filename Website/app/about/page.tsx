@@ -6,7 +6,7 @@ import { StoreHeader } from "@/features/categories/components/store-header";
 
 export const metadata: Metadata = {
   title: "درباره ما",
-  description: "آشنایی با زریوان؛ تامین‌کننده محصولات ورزشی، کوهنوردی و تجهیزات فنی از سال ۱۳۹۰.",
+  description: "آشنایی با تاپ استوک ۳۶۰؛ تامین‌کننده محصولات ورزشی، کوهنوردی و تجهیزات فنی از سال ۱۳۹۰.",
 };
 
 export default function AboutPage() {
@@ -18,12 +18,12 @@ export default function AboutPage() {
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-96 bg-[radial-gradient(circle_at_top,var(--color-accent),transparent_68%)] opacity-45" />
         <div className="mx-auto w-full max-w-5xl">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="text-sm font-black tracking-[0.18em] text-primary">داستان زریوان</p>
+            <p className="text-sm font-black tracking-[0.18em] text-primary">داستان تاپ استوک ۳۶۰</p>
             <h1 className="mt-3 text-3xl font-black leading-tight tracking-[-0.04em] sm:text-5xl">
               همراه مطمئن ماجراجویی‌های شما
             </h1>
             <p className="mt-5 text-base leading-8 text-muted-foreground sm:text-lg">
-              سال‌ها تجربه، انتخاب دقیق و عشق به طبیعت؛ این همان چیزی است که زریوان را ساخته است.
+              سال‌ها تجربه، انتخاب دقیق و عشق به طبیعت؛ این همان چیزی است که تاپ استوک ۳۶۰ را ساخته است.
             </p>
           </div>
 
@@ -39,19 +39,19 @@ export default function AboutPage() {
                 </h2>
                 <div className="mt-6 space-y-5 text-sm leading-8 text-secondary-foreground/85 sm:text-base sm:leading-9">
                   <p>
-                    زریوان فعالیت خود را از سال ۱۳۹۰ در عرصه تأمین محصولات ورزشی و کوهنوردی آغاز کرد؛ از سنگ‌نوردی و غارنوردی گرفته تا دوچرخه‌سواری کوهستان و دیگر تجهیزات تخصصی طبیعت‌گردی.
+                    تاپ استوک ۳۶۰ فعالیت خود را از سال ۱۳۹۰ در عرصه تأمین محصولات ورزشی و کوهنوردی آغاز کرد؛ از سنگ‌نوردی و غارنوردی گرفته تا دوچرخه‌سواری کوهستان و دیگر تجهیزات تخصصی طبیعت‌گردی.
                   </p>
                   <p>
                     در طول این سال‌ها، با شناخت دقیق نیازهای ورزشکاران و علاقه‌مندان به طبیعت، تلاش کرده‌ایم مجموعه‌ای از اکسسوری‌های کاربردی و ابزارآلات فنی درجه‌یک بازار ایران را با وسواس و دقت در اختیار شما قرار دهیم.
                   </p>
                   <p>
-                    برای ما رضایت مشتری فقط یک شعار نیست؛ زریوان همواره کوشیده است با ارائه محصولاتی باکیفیت و دارای ضمانت اصالت، اعتماد شما را به تجربه‌ای ماندگار تبدیل کند.
+                    برای ما رضایت مشتری فقط یک شعار نیست؛ تاپ استوک ۳۶۰ همواره کوشیده است با ارائه محصولاتی باکیفیت و دارای ضمانت اصالت، اعتماد شما را به تجربه‌ای ماندگار تبدیل کند.
                   </p>
                 </div>
               </div>
 
               <div className="mx-auto flex size-44 items-center justify-center rounded-full border border-accent/55 bg-background/10 p-4 shadow-xl shadow-black/15 sm:size-52">
-                <Image src="/images/zaryvan-logo.png" alt="لوگوی زریوان" width={208} height={208} className="size-full rounded-full object-contain" priority />
+                <Image src="/images/zaryvan-logo.png" alt="لوگوی تاپ استوک ۳۶۰" width={208} height={208} className="size-full rounded-full object-contain" priority />
               </div>
             </div>
           </section>
@@ -71,7 +71,7 @@ export default function AboutPage() {
 
           <div className="mt-10 text-center">
             <Link href="/shop" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-primary px-6 text-sm font-black text-primary-foreground shadow-lg shadow-primary-shadow transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-              مشاهده محصولات زریوان
+              مشاهده محصولات تاپ استوک ۳۶۰
             </Link>
           </div>
         </div>

@@ -29,7 +29,7 @@ export function StoreLocationMap() {
         weight: 4,
         fillColor: "#2a835f",
         fillOpacity: 1,
-      }).addTo(map).bindPopup("لوازم کمپ و کوه‌نوردی زریوان").openPopup();
+      }).addTo(map).bindPopup("تاپ استوک ۳۶۰").openPopup();
     });
 
     return () => {
@@ -38,5 +38,5 @@ export function StoreLocationMap() {
     };
   }, []);
 
-  return <div ref={mapElementRef} className="h-full min-h-64 w-full overflow-hidden rounded-2xl" aria-label="نقشه موقعیت فروشگاه زریوان" />;
+  return <div ref={mapElementRef} className="h-full min-h-64 w-full overflow-hidden rounded-2xl" aria-label="نقشه موقعیت فروشگاه تاپ استوک ۳۶۰" />;
 }

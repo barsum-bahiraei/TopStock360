@@ -10,7 +10,7 @@ const storeBenefits = [
 
 export function StoreBenefits() {
   return (
-    <section aria-label="مزایای خرید از زریوان" className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-4 px-5 py-6 sm:grid-cols-2 sm:px-8 lg:grid-cols-4 lg:px-12">
+    <section aria-label="مزایای خرید از تاپ استوک ۳۶۰" className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-4 px-5 py-6 sm:grid-cols-2 sm:px-8 lg:grid-cols-4 lg:px-12">
       {storeBenefits.map((benefit) => {
         const isSupport = benefit.icon === "support_agent";
         const content = <>
@@ -22,7 +22,7 @@ export function StoreBenefits() {
           </span>
         </>;
         const className = "flex min-h-24 items-center justify-center gap-4 rounded-xl border border-white/20 bg-secondary/70 px-4 py-4 text-secondary-foreground shadow-sm lg:px-5";
-        return isSupport ? <a key={benefit.title} href={whatsappSupportUrl} target="_blank" rel="noreferrer" aria-label={`پشتیبانی واتساپ زریوان ${whatsappSupportNumber}`} className={`${className} outline-none transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring`}>{content}</a> : <div key={benefit.title} className={className}>{content}</div>;
+        return isSupport ? <a key={benefit.title} href={whatsappSupportUrl} target="_blank" rel="noreferrer" aria-label={`پشتیبانی واتساپ تاپ استوک ۳۶۰ ${whatsappSupportNumber}`} className={`${className} outline-none transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring`}>{content}</a> : <div key={benefit.title} className={className}>{content}</div>;
       })}
     </section>
   );

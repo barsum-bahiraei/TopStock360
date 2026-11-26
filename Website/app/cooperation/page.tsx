@@ -5,14 +5,14 @@ import { StoreFooter } from "@/features/layout/components/store-footer";
 
 export const metadata: Metadata = {
   title: "همکاری با ما",
-  description: "همکاری مربیان، تورلیدرها و همراهان جامعه ورزش و طبیعت‌گردی با فروشگاه زریوان.",
+  description: "همکاری مربیان، تورلیدرها و همراهان جامعه ورزش و طبیعت‌گردی با فروشگاه تاپ استوک ۳۶۰.",
 };
 
 const audiences = [
   {
     icon: "fitness_center",
     title: "مربیان باشگاه",
-    description: "اگر با ورزشکاران و علاقه‌مندان به کوه و طبیعت در ارتباط هستید، می‌توانید زریوان را به اعضای باشگاه خود معرفی کنید.",
+    description: "اگر با ورزشکاران و علاقه‌مندان به کوه و طبیعت در ارتباط هستید، می‌توانید تاپ استوک ۳۶۰ را به اعضای باشگاه خود معرفی کنید.",
   },
   {
     icon: "hiking",
@@ -21,15 +21,15 @@ const audiences = [
   },
   {
     icon: "diversity_3",
-    title: "همراهان زریوان",
-    description: "اگر به هر شکلی می‌توانید زریوان را به دوستان و جامعه اطراف خود معرفی کنید، از گفت‌وگو با شما خوشحال می‌شویم.",
+    title: "همراهان تاپ استوک ۳۶۰",
+    description: "اگر به هر شکلی می‌توانید تاپ استوک ۳۶۰ را به دوستان و جامعه اطراف خود معرفی کنید، از گفت‌وگو با شما خوشحال می‌شویم.",
   },
 ] as const;
 
 const steps = [
   ["۰۱", "با ما تماس بگیرید", "از طریق صفحه ارتباط با ما، موضوع همکاری و زمینه فعالیت خود را برای تیم پشتیبانی توضیح دهید."],
   ["۰۲", "جامعه خود را معرفی کنید", "درباره باشگاه، تورها یا جمع دوستانی که با آن‌ها در ارتباط هستید، اطلاعات بیشتری در اختیار ما قرار دهید."],
-  ["۰۳", "باشگاه مشتریان خود را بسازید", "با معرفی دوستانتان، باشگاه مشتریان اختصاصی خود را شکل دهید و از مزایای همکاری با فروشگاه زریوان برخوردار شوید."],
+  ["۰۳", "باشگاه مشتریان خود را بسازید", "با معرفی دوستانتان، باشگاه مشتریان اختصاصی خود را شکل دهید و از مزایای همکاری با فروشگاه تاپ استوک ۳۶۰ برخوردار شوید."],
 ] as const;
 
 export default function CooperationPage() {
@@ -41,12 +41,12 @@ export default function CooperationPage() {
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[32rem] bg-[radial-gradient(circle_at_top,var(--color-accent),transparent_68%)] opacity-50" />
         <div className="mx-auto w-full max-w-6xl">
           <header className="mx-auto max-w-3xl text-center">
-            <p className="text-sm font-black tracking-[0.18em] text-primary">همکاری با زریوان</p>
+            <p className="text-sm font-black tracking-[0.18em] text-primary">همکاری با تاپ استوک ۳۶۰</p>
             <h1 className="mt-3 text-3xl font-black leading-tight tracking-[-0.04em] sm:text-5xl">
               با هم، مسیرهای بیشتری را فتح می‌کنیم
             </h1>
             <p className="mt-5 text-base leading-8 text-muted-foreground sm:text-lg">
-              اگر مربی باشگاه، تورلیدر یا یکی از همراهان فعال جامعه ورزش و طبیعت‌گردی هستید و می‌توانید زریوان را به دوستانتان معرفی کنید، مشتاق گفت‌وگو با شما هستیم.
+              اگر مربی باشگاه، تورلیدر یا یکی از همراهان فعال جامعه ورزش و طبیعت‌گردی هستید و می‌توانید تاپ استوک ۳۶۰ را به دوستانتان معرفی کنید، مشتاق گفت‌وگو با شما هستیم.
             </p>
           </header>
 
@@ -58,10 +58,10 @@ export default function CooperationPage() {
               <div>
                 <p className="text-sm font-bold text-accent">یک همکاری دوطرفه و ماندگار</p>
                 <h2 className="mt-3 text-2xl font-black leading-10 sm:text-3xl">
-                  باشگاه مشتریان خودتان را با زریوان بسازید
+                  باشگاه مشتریان خودتان را با تاپ استوک ۳۶۰ بسازید
                 </h2>
                 <p className="mt-5 text-sm leading-8 text-secondary-foreground/85 sm:text-base sm:leading-9">
-                  شما می‌توانید با معرفی دوستان، ورزشکاران و همراهانتان، باشگاه مشتریان اختصاصی خود را شکل دهید. این همکاری فرصتی است تا جامعه شما راحت‌تر به تجهیزات کمپینگ و کوه‌نوردی دسترسی داشته باشد و شما نیز از مزایای فروشگاه زریوان بهره‌مند شوید.
+                  شما می‌توانید با معرفی دوستان، ورزشکاران و همراهانتان، باشگاه مشتریان اختصاصی خود را شکل دهید. این همکاری فرصتی است تا جامعه شما راحت‌تر به تجهیزات کمپینگ و کوه‌نوردی دسترسی داشته باشد و شما نیز از مزایای فروشگاه تاپ استوک ۳۶۰ بهره‌مند شوید.
                 </p>
                 <p className="mt-4 text-sm leading-8 text-secondary-foreground/70 sm:text-base">
                   برای آشنایی با شیوه همکاری و دریافت جزئیات، کافی است با تیم پشتیبانی ما در تماس باشید.
@@ -94,7 +94,7 @@ export default function CooperationPage() {
           <section aria-labelledby="cooperation-steps-title" className="mt-8">
             <div className="text-center">
               <p className="text-sm font-bold text-primary">شروع همکاری</p>
-              <h2 id="cooperation-steps-title" className="mt-2 text-2xl font-black sm:text-3xl">سه قدم تا همراهی با زریوان</h2>
+              <h2 id="cooperation-steps-title" className="mt-2 text-2xl font-black sm:text-3xl">سه قدم تا همراهی با تاپ استوک ۳۶۰</h2>
             </div>
 
             <div className="mt-7 grid gap-4 md:grid-cols-3">

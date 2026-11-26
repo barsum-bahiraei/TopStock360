@@ -19,10 +19,10 @@ const iranSans = localFont({
 
 export const metadata: Metadata = {
   title: {
-    default: "لوازم کمپ و کوه‌نوردی زریوان",
-    template: "%s | زریوان",
+    default: "تاپ استوک ۳۶۰",
+    template: "%s | تاپ استوک ۳۶۰",
   },
-  description: "خرید لوازم کمپینگ و کوه‌نوردی از فروشگاه زریوان.",
+  description: "خرید لوازم کمپینگ و کوه‌نوردی از فروشگاه تاپ استوک ۳۶۰.",
   icons: {
     icon: "/images/zaryvan-logo.png",
     apple: "/images/zaryvan-logo.png",

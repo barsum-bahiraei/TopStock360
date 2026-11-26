@@ -9,7 +9,7 @@ import { socialLinks } from "@/features/layout/utils/social-links";
 
 export const metadata: Metadata = {
   title: "تماس با ما",
-  description: "راه‌های ارتباطی با لوازم کمپ و کوه‌نوردی زریوان.",
+  description: "راه‌های ارتباطی با تاپ استوک ۳۶۰.",
 };
 
 export default function ContactPage() {
@@ -21,7 +21,7 @@ export default function ContactPage() {
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-96 bg-[radial-gradient(circle_at_top,var(--color-accent),transparent_68%)] opacity-45" />
         <div className="mx-auto w-full max-w-6xl">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="text-sm font-black tracking-[0.18em] text-primary">ارتباط با زریوان</p>
+            <p className="text-sm font-black tracking-[0.18em] text-primary">ارتباط با تاپ استوک ۳۶۰</p>
             <h1 className="mt-3 text-3xl font-black leading-tight tracking-[-0.04em] sm:text-5xl">همیشه در کنار شما هستیم</h1>
             <p className="mt-5 text-base leading-8 text-muted-foreground sm:text-lg">
               برای پیگیری سفارش، دریافت راهنمایی یا آشنایی بیشتر با محصولات، از راه‌های ارتباطی زیر با ما در تماس باشید.
@@ -58,7 +58,7 @@ export default function ContactPage() {
             <section className="relative flex min-h-[25rem] flex-col overflow-hidden rounded-3xl border border-accent/65 bg-accent/20 p-6 shadow-2xl shadow-primary-shadow backdrop-blur-xl sm:p-10">
               <div className="pointer-events-none absolute -bottom-20 -right-16 size-64 rounded-full border-[3rem] border-primary/20" aria-hidden="true" />
               <div className="relative z-10 flex flex-1 flex-col">
-                <p className="text-sm font-bold text-primary">موقعیت زریوان</p>
+                <p className="text-sm font-bold text-primary">موقعیت تاپ استوک ۳۶۰</p>
                 <h2 className="mt-3 text-2xl font-black sm:text-3xl">لوکیشن فروشگاه</h2>
                 <p className="mt-4 max-w-md text-sm leading-7 text-muted-foreground">
                   آدرس دقیق فروشگاه را روی نقشه پیدا کنید و برای مسیریابی، آن را در برنامهٔ نشان باز کنید.
@@ -75,7 +75,7 @@ export default function ContactPage() {
 
           <div className="mt-10 text-center">
             <Link href="/shop" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-primary px-6 text-sm font-black text-primary-foreground shadow-lg shadow-primary-shadow transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-              مشاهده محصولات زریوان
+              مشاهده محصولات تاپ استوک ۳۶۰
             </Link>
           </div>
         </div>

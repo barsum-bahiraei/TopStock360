@@ -4,7 +4,7 @@ import { LoginForm } from "@/features/auth/components/login-form";
 
 export const metadata: Metadata = {
   title: "ورود",
-  description: "وارد حساب کاربری خود در لوازم کمپ و کوه‌نوردی زریوان شوید.",
+  description: "وارد حساب کاربری خود در تاپ استوک ۳۶۰ شوید.",
 };
 
 export default function LoginPage() {
