@@ -58,13 +58,13 @@ function PromoGrid({ items, label, redOverlay = false }: { items: readonly Promo
     <section aria-label={label} className="bg-background px-4 pb-10 text-white sm:px-8 sm:pb-14 lg:px-12">
       <div className="mx-auto grid w-full max-w-[1700px] gap-5 lg:grid-cols-2 lg:gap-6">
         {items.map((promo) => (
-          <Link key={promo.href} href={promo.href} className="group relative block min-h-[32rem] overflow-hidden rounded-3xl border border-primary/20 shadow-xl shadow-primary-shadow outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:min-h-[40rem] lg:min-h-[48rem]">
+          <Link key={promo.href} href={promo.href} className="group relative block min-h-[32rem] overflow-hidden rounded-3xl border border-black/10 shadow-xl shadow-black/15 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:min-h-[40rem] lg:min-h-[48rem]">
             <Image src={promo.image} alt={promo.imageAlt} fill sizes="(max-width: 1023px) 100vw, 50vw" className="object-cover transition-transform duration-700 group-hover:scale-[1.025]" />
-            <span className={`absolute inset-0 bg-gradient-to-b to-transparent ${redOverlay ? "from-secondary/90 via-secondary/30" : "from-black/80 via-black/20"}`} aria-hidden="true" />
+            <span className={`absolute inset-0 bg-gradient-to-b to-transparent ${redOverlay ? "from-primary-hover/95 via-primary/35" : "from-black/80 via-black/20"}`} aria-hidden="true" />
 
             <span className="relative z-10 flex min-h-[32rem] items-start px-5 py-8 sm:min-h-[40rem] sm:px-9 sm:py-10 lg:min-h-[48rem] lg:px-10 lg:py-12">
               <span className="block w-full min-w-0 text-right drop-shadow-md">
-                <span className={`inline-flex min-h-8 items-center rounded-full px-3 text-xs font-black backdrop-blur-sm sm:min-h-9 sm:px-4 sm:text-sm ${redOverlay ? "border border-accent/60 bg-secondary/45 text-accent" : "border border-white/35 bg-black/40 text-white"}`}>{promo.eyebrow}</span>
+                <span className={`inline-flex min-h-8 items-center rounded-full px-3 text-xs font-black text-white backdrop-blur-sm sm:min-h-9 sm:px-4 sm:text-sm ${redOverlay ? "border border-white/30 bg-primary-hover/55" : "border border-white/35 bg-black/40"}`}>{promo.eyebrow}</span>
                 <strong className="mt-4 block whitespace-nowrap text-[clamp(1rem,2.2vw,2.25rem)] font-black leading-tight tracking-[-0.04em]">{promo.title}</strong>
                 <span className="mt-3 block text-sm font-medium leading-7 text-white/85 sm:text-base">{promo.description}</span>
                 <span className="mt-5 inline-flex min-h-10 items-center gap-1 rounded-xl bg-primary px-4 text-xs font-black text-primary-foreground shadow-lg shadow-primary-shadow sm:min-h-11 sm:text-sm">

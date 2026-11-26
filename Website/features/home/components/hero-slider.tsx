@@ -55,7 +55,7 @@ export function HeroSlider() {
   );
 
   return (
-    <section aria-label="مجموعه‌های ویژه" className="relative w-full overflow-hidden bg-secondary">
+    <section aria-label="مجموعه‌های ویژه" className="relative w-full overflow-hidden bg-black">
       <Swiper
         modules={[A11y, Autoplay, Keyboard, Pagination]}
         onSwiper={(swiper) => { swiperRef.current = swiper; }}
@@ -68,16 +68,16 @@ export function HeroSlider() {
       >
         {heroSlides.map((slide, index) => (
           <SwiperSlide key={slide.title}>
-            <article className="relative min-h-[20rem] overflow-hidden bg-secondary text-white sm:min-h-[31rem] lg:min-h-[29rem]">
+            <article className="relative min-h-[20rem] overflow-hidden bg-black text-white sm:min-h-[31rem] lg:min-h-[29rem]">
               <Image src={slide.image} alt={slide.imageAlt} fill priority={index === 0} sizes="100vw" className="object-cover" />
-              <div className="absolute inset-0 bg-secondary/45 sm:bg-gradient-to-r sm:from-secondary/90 sm:via-secondary/55 sm:to-transparent" aria-hidden="true" />
+              <div className="absolute inset-0 bg-black/30 sm:bg-gradient-to-r sm:from-black/80 sm:via-black/35 sm:to-transparent" aria-hidden="true" />
               <HeroSlideLink slide={slide} />
 
               <div className="relative z-10 flex min-h-[20rem] items-center px-5 pb-14 pt-8 sm:min-h-[31rem] sm:px-20 sm:pb-16 sm:pt-12 lg:min-h-[29rem] lg:px-24 xl:px-[max(6rem,calc((100vw-80rem)/2))]">
                 <div className="mr-auto w-full max-w-3xl text-right drop-shadow-md">
                   {slide.showInstagramLogo ? <InstagramLogo /> : null}
                   {slide.eyebrow ? (
-                    <span className="inline-flex min-h-8 items-center rounded-full border border-accent/60 bg-secondary/45 px-3 text-xs font-black text-accent backdrop-blur-sm sm:min-h-9 sm:px-4 sm:text-sm">{slide.eyebrow}</span>
+                    <span className="inline-flex min-h-8 items-center rounded-full border border-white/35 bg-black/40 px-3 text-xs font-black text-white backdrop-blur-sm sm:min-h-9 sm:px-4 sm:text-sm">{slide.eyebrow}</span>
                   ) : (
                     <span className="block h-1 w-12 rounded-full bg-accent" aria-hidden="true" />
                   )}

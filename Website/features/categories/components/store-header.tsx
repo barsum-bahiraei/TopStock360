@@ -169,7 +169,7 @@ export function StoreHeader() {
   );
 
   return (
-    <header data-store-header onMouseLeave={closeDesktopMenu} className="store-header-landscape sticky top-0 z-[1100] border-b border-white/15 text-white shadow-lg shadow-primary-shadow">
+    <header data-store-header onMouseLeave={closeDesktopMenu} className="store-header-landscape sticky top-0 z-[1100] border-b border-white/15 text-white shadow-lg shadow-black/20">
       <Image src="/images/home/laptop-premium.jpg" alt="" fill priority sizes="100vw" className="pointer-events-none object-cover object-center" />
       <div className="relative z-[3] mx-auto flex h-20 w-full items-center gap-0 px-0 sm:h-24 md:gap-4 md:px-5 lg:px-6 xl:px-8">
         <div className="contents md:flex md:min-w-0 md:shrink-0 md:items-center md:gap-2 md:[direction:rtl]">
