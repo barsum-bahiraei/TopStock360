@@ -1,8 +1,9 @@
 import axios from "axios";
 import { clearAuthTokenIfExpired, getAuthToken } from "./auth-token";
+import { normalizePublicUrl } from "../utils/public-url";
 
 export const httpClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: normalizePublicUrl(import.meta.env.VITE_API_BASE_URL),
 });
 
 httpClient.interceptors.request.use((config) => {

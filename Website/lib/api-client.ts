@@ -1,8 +1,9 @@
 import axios from "axios";
 import { clearAuthTokenIfExpired, getAuthToken } from "./auth-token";
+import { normalizePublicUrl } from "./public-url";
 
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://5.10.248.182:8080/api",
+  baseURL: normalizePublicUrl(process.env.NEXT_PUBLIC_API_BASE_URL, "http://5.10.249.19:8080"),
   headers: {
     Accept: "application/json",
   },

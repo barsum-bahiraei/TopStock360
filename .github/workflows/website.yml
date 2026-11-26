@@ -17,6 +17,6 @@ jobs:
       image: topstock360-website
       image-tag-variable: WEBSITE_IMAGE_TAG
       build-args: |
-        NEXT_PUBLIC_API_BASE_URL=http://${{ vars.WEBSITE_API_BASE_URL }}
-        NEXT_PUBLIC_MINIO_BASE_URL=http://${{ vars.WEBSITE_MINIO_BASE_URL }}
+        NEXT_PUBLIC_API_BASE_URL=${{ vars.WEBSITE_API_BASE_URL }}
+        NEXT_PUBLIC_MINIO_BASE_URL=${{ vars.WEBSITE_MINIO_BASE_URL }}
     secrets: inherit
