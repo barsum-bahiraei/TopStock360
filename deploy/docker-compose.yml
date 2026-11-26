@@ -21,7 +21,7 @@ services:
       - store
 
   minio:
-    image: cgr.dev/chainguard/minio@sha256:b9b1cce81a4a6cc9bf250e68d621cc0b9fb8ed15aefe18fcd1840525eab6a81a
+    image: ghcr.io/${GHCR_OWNER}/topstock360-minio:2026-11-23
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:

@@ -37,6 +37,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Ensure MinIO image is available in GHCR
+        if: inputs.service == 'backend'
+        run: |
+          source_image=cgr.dev/chainguard/minio@sha256:b9b1cce81a4a6cc9bf250e68d621cc0b9fb8ed15aefe18fcd1840525eab6a81a
+          target_image=ghcr.io/${{ github.repository_owner }}/topstock360-minio:2026-11-23
+          if ! docker pull "$target_image"; then
+            docker pull "$source_image"
+            docker tag "$(docker image inspect --format '{{.Id}}' "$source_image")" "$target_image"
+            docker push "$target_image"
+          fi
+
       - uses: docker/build-push-action@v6
         with:
           context: ${{ inputs.context }}
