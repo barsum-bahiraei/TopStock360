@@ -13,43 +13,43 @@ type Promo = {
 
 const promos = [
   {
-    href: "/shop?category=3",
-    eyebrow: "چادرهای کمپینگ",
-    title: "شب را وسط طبیعت زندگی کن",
-    description: "چادرت را برپا کن و هر منظره را به خانه‌ای تازه تبدیل کن.",
-    action: "مشاهده چادرها",
-    image: "/images/home/tent-category-promo.png",
-    imageAlt: "چادر سرخپوستی در طبیعت کوهستانی کنار دریاچه",
+    href: "/shop",
+    eyebrow: "لپ‌تاپ‌های روزمره و حرفه‌ای",
+    title: "برای هر نیاز، یک انتخاب دقیق",
+    description: "از کارهای روزمره تا طراحی و برنامه‌نویسی، مدل مناسب خودت را پیدا کن.",
+    action: "مشاهده لپ‌تاپ‌ها",
+    image: "/images/home/product-camera.jpg",
+    imageAlt: "تجهیزات دیجیتال مناسب کار روزمره",
   },
   {
-    href: "/shop?category=6",
-    eyebrow: "کیسه‌خواب و استراحت",
-    title: "برف بیرون، آرامش اینجاست",
-    description: "با کیسه‌خواب گرم و تشک بادی راحت، سرمای مسیر را پشت سر بگذار.",
-    action: "مشاهده کیسه‌خواب‌ها",
-    image: "/images/home/sleeping-bag-category-promo.png",
-    imageAlt: "فردی آسوده داخل کیسه‌خواب روی تشک بادی در طبیعت برفی",
+    href: "/shop",
+    eyebrow: "هندزفری و هدفون",
+    title: "جزئیات صدا را از دست نده",
+    description: "برای موسیقی، تماس یا بازی، صدایی شفاف و اتصال پایدار را تجربه کن.",
+    action: "مشاهده محصولات صوتی",
+    image: "/images/home/hero-headphones.jpg",
+    imageAlt: "هدفون و محصولات صوتی دیجیتال",
   },
 ] as const satisfies readonly Promo[];
 
 const outdoorEssentialsPromos = [
   {
-    href: "/shop?category=14",
-    eyebrow: "میز و صندلی کمپینگ",
-    title: "قله را به بهترین کافه دنیا تبدیل کن",
-    description: "میز را باز کن، صندلی‌ات را بچین و طعم استراحت را وسط بلندترین منظره‌ها بچش.",
-    action: "مشاهده میز و صندلی‌ها",
-    image: "/images/home/camp-furniture-category-promo.png",
-    imageAlt: "میز و صندلی‌های کمپینگ کنار دریاچه و کوهستان هنگام غروب",
+    href: "/shop",
+    eyebrow: "لوازم جانبی لپ‌تاپ",
+    title: "میز کارت را حرفه‌ای‌تر کن",
+    description: "ماوس، کیبورد، هاب و شارژر مناسب را کنار لپ‌تاپت داشته باش.",
+    action: "مشاهده لوازم جانبی",
+    image: "/images/home/hero-watch.jpg",
+    imageAlt: "لوازم جانبی دیجیتال مدرن",
   },
   {
-    href: "/shop?category=16",
-    eyebrow: "کوله‌پشتی‌های کوهنوردی",
-    title: "همه مسیر را روی دوشت فتح کن",
-    description: "کوله‌ات را ببند؛ هر چیزی که برای صعود بعدی لازم داری، آماده حرکت است.",
-    action: "مشاهده کوله‌پشتی‌ها",
-    image: "/images/home/backpack-category-promo.png",
-    imageAlt: "کوله‌پشتی کوهنوردی حرفه‌ای روی صخره در طلوع کوهستان",
+    href: "/shop",
+    eyebrow: "پیشنهادهای ویژه",
+    title: "خرید هوشمند با قیمت بهتر",
+    description: "محصولات منتخب دیجیتال را با شرایط مناسب‌تر بررسی و مقایسه کن.",
+    action: "مشاهده پیشنهادها",
+    image: "/images/home/product-camera.jpg",
+    imageAlt: "دوربین و محصولات منتخب دیجیتال",
   },
 ] as const satisfies readonly Promo[];
 
@@ -85,5 +85,5 @@ export function CategoryPromos() {
 }
 
 export function OutdoorEssentialsPromos() {
-  return <PromoGrid items={outdoorEssentialsPromos} label="تجهیزات سفر و کمپینگ" />;
+  return <PromoGrid items={outdoorEssentialsPromos} label="لوازم دیجیتال منتخب" />;
 }

@@ -8,21 +8,21 @@
 }
 
 :root {
-  --background: #f4f7f5;
-  --foreground: #092328;
+  --background: #fff7f8;
+  --foreground: #2d1118;
   --surface: #ffffff;
-  --primary: #2a835f;
-  --primary-hover: #12544f;
+  --primary: #c11235;
+  --primary-hover: #991b32;
   --primary-foreground: #ffffff;
-  --primary-shadow: rgb(42 131 95 / 0.22);
-  --secondary: #12544f;
+  --primary-shadow: rgb(193 18 53 / 0.22);
+  --secondary: #7f1d2d;
   --secondary-foreground: #ffffff;
-  --accent: #8bbb92;
-  --accent-foreground: #092328;
-  --muted: #e7f0ea;
-  --muted-foreground: #526866;
-  --border: #d2e2d8;
-  --ring: #2a835f;
+  --accent: #f29aaa;
+  --accent-foreground: #2d1118;
+  --muted: #fbeaec;
+  --muted-foreground: #76545b;
+  --border: #efcdd3;
+  --ring: #c11235;
   --success: #2a835f;
   --warning: #b7650b;
   --error: #c9293e;
@@ -61,7 +61,7 @@ body {
 
 .store-header-landscape {
   isolation: isolate;
-  background-color: #0b3a32;
+  background-color: #6f1025;
 }
 
 .store-header-landscape::before {
@@ -71,8 +71,8 @@ body {
   content: "";
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgb(5 37 32 / 0.72), rgb(12 65 54 / 0.48) 48%, rgb(5 37 32 / 0.72)),
-    linear-gradient(180deg, rgb(4 32 28 / 0.2), rgb(4 32 28 / 0.68));
+    linear-gradient(90deg, rgb(71 8 26 / 0.76), rgb(145 20 48 / 0.48) 48%, rgb(71 8 26 / 0.76)),
+    linear-gradient(180deg, rgb(62 7 21 / 0.2), rgb(62 7 21 / 0.72));
 }
 
 .product-description {

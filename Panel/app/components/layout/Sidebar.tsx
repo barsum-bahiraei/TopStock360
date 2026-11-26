@@ -60,7 +60,7 @@ export function Sidebar({ isMobileOpen, onMobileClose }: SidebarProps) {
         <div className="flex h-16 items-center justify-between border-b border-gray-200 px-6 dark:border-gray-800">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-2xl text-primary-600">dashboard</span>
-            <span className="text-lg font-semibold text-gray-900 dark:text-white">پنل</span>
+            <span className="text-lg font-semibold text-gray-900 dark:text-white">تاپ استوک ۳۶۰</span>
           </div>
           <button
             onClick={onMobileClose}

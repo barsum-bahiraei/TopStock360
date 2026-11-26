@@ -84,7 +84,7 @@ export default function LoginPage() {
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-primary-600">
               <span className="material-symbols-outlined text-xl text-white">dashboard</span>
             </div>
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">خوش آمدید</h1>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">ورود به تاپ استوک ۳۶۰</h1>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               شماره تماس خود را وارد کنید تا کد تأیید دریافت کنید
             </p>

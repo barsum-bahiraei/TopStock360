@@ -12,14 +12,14 @@ export function StoreFooter() {
       <div className="mx-auto grid w-full max-w-7xl gap-8 px-5 py-10 sm:px-8 md:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(15rem,1fr)_auto] lg:items-start lg:px-12">
         <div className="max-w-3xl">
           <Link href="/" aria-label="خانه فروشگاه" className="inline-flex min-h-11 items-center gap-2.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            <Image src="/images/zaryvan-logo.png" alt="" width={48} height={48} className="size-12 rounded-full object-contain" />
-            <span className="text-lg font-black tracking-[-0.04em]">لوازم کمپ و کوه‌نوردی زریوان</span>
+            <Image src="/images/topstock360-logo.png" alt="" width={48} height={48} className="size-12 rounded-full object-contain" />
+            <span className="text-lg font-black tracking-[-0.04em]">تاپ استوک ۳۶۰</span>
           </Link>
           <p className="mt-3 text-sm leading-8 text-muted-foreground">
-            مجموعه زریوان فروشگاه عرضه حضوری و مجازی محصولات متنوع کوهنوردی، طبیعت گردی و لوازم سنگ نوردی و دره نوردی با قیمت بسیار مناسب و کیفیت مطلوب است. هدف ما فراهم سازی بستری مطمئن جهت خرید آسان و با رضایت و اطمینان خاطر کامل مشتریان عزیز می باشد
+            تاپ استوک ۳۶۰ فروشگاه تخصصی لپ‌تاپ، هندزفری و لوازم دیجیتال است؛ با تنوع مناسب، تضمین اصالت و تجربه خریدی ساده و مطمئن.
           </p>
           <p className="mt-5 text-xl font-black leading-9 text-foreground sm:text-2xl">
-            زریوان از منزل تا قله همراه شماست.
+            تکنولوژی مناسب، انتخاب هوشمندانه.
           </p>
         </div>
 
@@ -31,7 +31,7 @@ export function StoreFooter() {
             <a href={whatsappSupportUrl} target="_blank" rel="noreferrer" className="flex min-h-11 flex-wrap items-center justify-between gap-2 rounded-lg px-2 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"><span className="text-muted-foreground">پشتیبانی واتساپ</span><span dir="ltr" className="font-bold">{whatsappSupportNumber}</span></a>
           </div>
           <p className="mt-4 px-2 text-xs leading-6 text-muted-foreground">شنبه تا پنج‌شنبه: ۸ صبح تا ۹ شب<br />جمعه: ۱۱ صبح تا ۹ شب</p>
-          <nav aria-label="شبکه‌های اجتماعی زریوان" className="mt-5 grid grid-cols-4 gap-2">
+          <nav aria-label="شبکه‌های اجتماعی تاپ استوک ۳۶۰" className="mt-5 grid grid-cols-4 gap-2">
             {socialLinks.map((social) => <a key={social.label} href={social.href} target="_blank" rel="noreferrer" aria-label={social.label} title={social.label} className="flex min-h-20 flex-col items-center justify-center gap-2 rounded-xl border border-border bg-surface p-2 text-center outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"><Image src={social.image} alt="" width={32} height={32} className="size-8 object-contain" /><span className="text-xs font-bold">{social.label}</span></a>)}
           </nav>
           <Link href="/contact" className="mt-4 inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-sm font-bold text-primary outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring">تماس با ما<span className="material-symbols-rounded text-lg" aria-hidden="true">arrow_back</span></Link>
@@ -42,14 +42,14 @@ export function StoreFooter() {
           target="_blank"
           rel="noopener"
           href={trustSealLink}
-          aria-label="مشاهده نماد اعتماد الکترونیکی زریوان"
+          aria-label="مشاهده نماد اعتماد الکترونیکی تاپ استوک ۳۶۰"
           className="mx-auto inline-flex min-h-32 min-w-32 items-center justify-center rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring md:col-span-2 lg:col-span-1"
         >
           <Image
             unoptimized
             referrerPolicy="origin"
             src={trustSealImage}
-            alt="نماد اعتماد الکترونیکی زریوان"
+            alt="نماد اعتماد الکترونیکی تاپ استوک ۳۶۰"
             width={120}
             height={120}
             {...{ code: trustSealCode }}
@@ -58,7 +58,7 @@ export function StoreFooter() {
         </a>
       </div>
       <div className="border-t border-border px-5 py-4 text-center text-xs text-muted-foreground">
-        تمامی حقوق برای لوازم کمپ و کوه‌نوردی زریوان محفوظ است.
+        تمامی حقوق برای تاپ استوک ۳۶۰ محفوظ است.
       </div>
     </footer>
   );

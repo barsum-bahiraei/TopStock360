@@ -33,7 +33,7 @@ const categoryImages: Record<number, string> = {
   81: "/images/home/categories/81-camping-knife.png",
 };
 
-const fallbackImage = "/images/header-forest-mountains.png";
+const fallbackImage = "/images/home/product-camera.jpg";
 
 function collectCategoryImages(categories: Category[], inheritedImage = fallbackImage): Record<number, string> {
   return categories.reduce<Record<number, string>>((images, category) => {

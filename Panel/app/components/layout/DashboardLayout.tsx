@@ -66,7 +66,7 @@ export default function DashboardLayout() {
               <span className="material-symbols-outlined">menu</span>
             </button>
             <div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white">پنل فروشگاه</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">پنل تاپ استوک ۳۶۰</p>
               <p className="hidden text-xs text-gray-500 dark:text-gray-400 sm:block">فضای مدیریت</p>
             </div>
           </div>
