@@ -2,7 +2,7 @@ name: topstock360
 
 services:
   postgres:
-    image: postgres:17-alpine
+    image: ghcr.io/${GHCR_OWNER}/topstock360-postgres:17-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
@@ -21,7 +21,7 @@ services:
       - store
 
   minio:
-    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
+    image: ghcr.io/${GHCR_OWNER}/topstock360-minio:RELEASE.2025-04-22T22-12-26Z
     restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
