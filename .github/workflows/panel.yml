@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths:
       - "Panel/**"
-      - "deploy/**"
       - ".github/workflows/panel.yml"
       - ".github/workflows/_publish.yml"
   workflow_dispatch:
