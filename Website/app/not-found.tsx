@@ -29,7 +29,7 @@ export default function NotFound() {
           aria-label="خانه فروشگاه"
           className="group inline-flex min-h-12 items-center gap-3 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background"
         >
-          <Image src="/images/topstock360-logo.png" alt="" width={48} height={48} className="size-12 rounded-full object-contain transition-transform duration-200 group-hover:-rotate-3" />
+          <Image src="/images/topstock360-logo.svg" alt="" width={48} height={48} className="size-12 rounded-full object-contain transition-transform duration-200 group-hover:-rotate-3" />
           <span className="text-lg font-black tracking-[-0.04em]">تاپ استوک ۳۶۰</span>
         </Link>
 

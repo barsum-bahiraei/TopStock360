@@ -51,7 +51,7 @@ export default function AboutPage() {
               </div>
 
               <div className="mx-auto flex size-44 items-center justify-center rounded-full border border-accent/55 bg-background/10 p-4 shadow-xl shadow-black/15 sm:size-52">
-                <Image src="/images/topstock360-logo.png" alt="لوگوی تاپ استوک ۳۶۰" width={208} height={208} className="size-full rounded-full object-contain" priority />
+                <Image src="/images/topstock360-logo.svg" alt="لوگوی تاپ استوک ۳۶۰" width={208} height={208} className="size-full rounded-full object-contain" priority />
               </div>
             </div>
           </section>

@@ -24,8 +24,8 @@ export const metadata: Metadata = {
   },
   description: "خرید لپ‌تاپ، هندزفری و لوازم دیجیتال از فروشگاه تاپ استوک ۳۶۰.",
   icons: {
-    icon: "/images/topstock360-logo.png",
-    apple: "/images/topstock360-logo.png",
+    icon: "/images/topstock360-logo.svg",
+    apple: "/images/topstock360-logo.svg",
   },
 };
 

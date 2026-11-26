@@ -9,20 +9,20 @@
 
 :root {
   --background: #fff7f8;
-  --foreground: #2d1118;
+  --foreground: #2b1217;
   --surface: #ffffff;
-  --primary: #c11235;
-  --primary-hover: #991b32;
+  --primary: #ef4056;
+  --primary-hover: #d9364e;
   --primary-foreground: #ffffff;
-  --primary-shadow: rgb(193 18 53 / 0.22);
-  --secondary: #7f1d2d;
+  --primary-shadow: rgb(239 64 86 / 0.24);
+  --secondary: #b21f38;
   --secondary-foreground: #ffffff;
-  --accent: #f29aaa;
-  --accent-foreground: #2d1118;
-  --muted: #fbeaec;
-  --muted-foreground: #76545b;
-  --border: #efcdd3;
-  --ring: #c11235;
+  --accent: #ff9baa;
+  --accent-foreground: #2b1217;
+  --muted: #fdecef;
+  --muted-foreground: #76575d;
+  --border: #f2d1d6;
+  --ring: #ef4056;
   --success: #2a835f;
   --warning: #b7650b;
   --error: #c9293e;
@@ -61,7 +61,7 @@ body {
 
 .store-header-landscape {
   isolation: isolate;
-  background-color: #6f1025;
+  background-color: #8f172d;
 }
 
 .store-header-landscape::before {
@@ -71,8 +71,8 @@ body {
   content: "";
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgb(71 8 26 / 0.76), rgb(145 20 48 / 0.48) 48%, rgb(71 8 26 / 0.76)),
-    linear-gradient(180deg, rgb(62 7 21 / 0.2), rgb(62 7 21 / 0.72));
+    linear-gradient(90deg, rgb(91 12 34 / 0.78), rgb(239 64 86 / 0.42) 48%, rgb(91 12 34 / 0.78)),
+    linear-gradient(180deg, rgb(75 9 27 / 0.18), rgb(75 9 27 / 0.72));
 }
 
 .product-description {

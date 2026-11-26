@@ -25,9 +25,9 @@ export function StoreLocationMap() {
 
       L.circleMarker([latitude, longitude], {
         radius: 11,
-        color: "#991b32",
+        color: "#d9364e",
         weight: 4,
-        fillColor: "#c11235",
+        fillColor: "#ef4056",
         fillOpacity: 1,
       }).addTo(map).bindPopup("تاپ استوک ۳۶۰").openPopup();
     });

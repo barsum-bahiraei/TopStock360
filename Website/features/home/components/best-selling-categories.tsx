@@ -7,33 +7,33 @@ import { useBestSellingCategories, useCategories } from "@/features/categories/h
 import type { Category } from "@/features/categories/types/category";
 
 const categoryImages: Record<number, string> = {
-  1: "/images/home/tent-category-promo.png",
-  2: "/images/home/tent-category-promo.png",
-  5: "/images/home/categories/6-sleeping-bag.png",
-  6: "/images/home/categories/6-sleeping-bag.png",
-  14: "/images/home/camp-furniture-category-promo.png",
-  15: "/images/home/categories/16-backpack.png",
-  16: "/images/home/categories/16-backpack.png",
-  20: "/images/home/categories/20-hydration.png",
-  23: "/images/home/categories/28-cookware.png",
-  28: "/images/home/categories/28-cookware.png",
-  35: "/images/home/categories/41-climbing-tools.png",
-  40: "/images/home/categories/41-climbing-tools.png",
-  41: "/images/home/categories/41-climbing-tools.png",
-  43: "/images/home/categories/43-rope.png",
-  44: "/images/home/categories/44-carabiner.png",
-  51: "/images/home/categories/52-clothing.png",
-  52: "/images/home/categories/52-clothing.png",
-  53: "/images/home/categories/52-clothing.png",
-  60: "/images/home/categories/60-footwear.png",
-  65: "/images/home/categories/65-clothing-accessories.png",
-  71: "/images/home/categories/71-accessories.png",
-  72: "/images/home/categories/71-accessories.png",
-  78: "/images/home/categories/81-camping-knife.png",
-  81: "/images/home/categories/81-camping-knife.png",
+  1: "/images/home/laptop-workspace.jpg",
+  2: "/images/home/laptop-premium.jpg",
+  5: "/images/home/hero-headphones.jpg",
+  6: "/images/home/hero-headphones.jpg",
+  14: "/images/home/laptop-office.jpg",
+  15: "/images/home/laptop-selection.jpg",
+  16: "/images/home/laptop-selection.jpg",
+  20: "/images/home/laptop-workspace.jpg",
+  23: "/images/home/laptop-office.jpg",
+  28: "/images/home/laptop-office.jpg",
+  35: "/images/home/laptop-premium.jpg",
+  40: "/images/home/laptop-premium.jpg",
+  41: "/images/home/laptop-premium.jpg",
+  43: "/images/home/hero-headphones.jpg",
+  44: "/images/home/hero-headphones.jpg",
+  51: "/images/home/laptop-workspace.jpg",
+  52: "/images/home/laptop-workspace.jpg",
+  53: "/images/home/laptop-workspace.jpg",
+  60: "/images/home/laptop-selection.jpg",
+  65: "/images/home/laptop-office.jpg",
+  71: "/images/home/hero-headphones.jpg",
+  72: "/images/home/hero-headphones.jpg",
+  78: "/images/home/laptop-selection.jpg",
+  81: "/images/home/laptop-selection.jpg",
 };
 
-const fallbackImage = "/images/home/product-camera.jpg";
+const fallbackImage = "/images/home/laptop-selection.jpg";
 
 function collectCategoryImages(categories: Category[], inheritedImage = fallbackImage): Record<number, string> {
   return categories.reduce<Record<number, string>>((images, category) => {

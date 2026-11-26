@@ -12,7 +12,7 @@ export function AuthShell({ title, description, children }: AuthShellProps) {
     <main className="grid min-h-dvh bg-background text-foreground lg:grid-cols-[minmax(0,0.9fr)_minmax(32rem,1.1fr)]">
       <section className="relative hidden overflow-hidden bg-secondary p-12 text-secondary-foreground lg:flex lg:flex-col lg:justify-between">
         <Link href="/" className="relative z-10 flex w-fit items-center gap-3 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-primary">
-          <Image src="/images/topstock360-logo.png" alt="" width={48} height={48} className="size-12 rounded-full object-contain" />
+          <Image src="/images/topstock360-logo.svg" alt="" width={48} height={48} className="size-12 rounded-full object-contain" />
           <span className="text-lg font-black tracking-[-0.04em]">تاپ استوک ۳۶۰</span>
         </Link>
 

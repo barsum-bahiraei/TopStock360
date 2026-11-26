@@ -18,8 +18,8 @@ const promos = [
     title: "برای هر نیاز، یک انتخاب دقیق",
     description: "از کارهای روزمره تا طراحی و برنامه‌نویسی، مدل مناسب خودت را پیدا کن.",
     action: "مشاهده لپ‌تاپ‌ها",
-    image: "/images/home/product-camera.jpg",
-    imageAlt: "تجهیزات دیجیتال مناسب کار روزمره",
+    image: "/images/home/laptop-workspace.jpg",
+    imageAlt: "لپ‌تاپ مناسب کار روزمره",
   },
   {
     href: "/shop",
@@ -39,8 +39,8 @@ const outdoorEssentialsPromos = [
     title: "میز کارت را حرفه‌ای‌تر کن",
     description: "ماوس، کیبورد، هاب و شارژر مناسب را کنار لپ‌تاپت داشته باش.",
     action: "مشاهده لوازم جانبی",
-    image: "/images/home/hero-watch.jpg",
-    imageAlt: "لوازم جانبی دیجیتال مدرن",
+    image: "/images/home/laptop-office.jpg",
+    imageAlt: "لپ‌تاپ و لوازم جانبی میز کار",
   },
   {
     href: "/shop",
@@ -48,8 +48,8 @@ const outdoorEssentialsPromos = [
     title: "خرید هوشمند با قیمت بهتر",
     description: "محصولات منتخب دیجیتال را با شرایط مناسب‌تر بررسی و مقایسه کن.",
     action: "مشاهده پیشنهادها",
-    image: "/images/home/product-camera.jpg",
-    imageAlt: "دوربین و محصولات منتخب دیجیتال",
+    image: "/images/home/laptop-selection.jpg",
+    imageAlt: "مجموعه لپ‌تاپ‌های منتخب فروشگاه",
   },
 ] as const satisfies readonly Promo[];
 

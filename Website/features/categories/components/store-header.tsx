@@ -169,15 +169,15 @@ export function StoreHeader() {
   );
 
   return (
-    <header data-store-header onMouseLeave={closeDesktopMenu} className="store-header-landscape sticky top-0 z-[1100] border-b border-white/15 text-white shadow-lg shadow-red-950/20">
-      <Image src="/images/home/hero-headphones.jpg" alt="" fill priority sizes="100vw" className="pointer-events-none object-cover object-center" />
+    <header data-store-header onMouseLeave={closeDesktopMenu} className="store-header-landscape sticky top-0 z-[1100] border-b border-white/15 text-white shadow-lg shadow-primary-shadow">
+      <Image src="/images/home/laptop-premium.jpg" alt="" fill priority sizes="100vw" className="pointer-events-none object-cover object-center" />
       <div className="relative z-[3] mx-auto flex h-20 w-full items-center gap-0 px-0 sm:h-24 md:gap-4 md:px-5 lg:px-6 xl:px-8">
         <div className="contents md:flex md:min-w-0 md:shrink-0 md:items-center md:gap-2 md:[direction:rtl]">
           <button type="button" aria-label="باز و بسته کردن منوی دسته‌بندی‌ها" aria-expanded={isMenuOpen} aria-controls="store-navigation" onClick={toggleMenu} className="absolute right-0 grid size-11 shrink-0 place-items-center rounded-lg outline-none transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/80 md:hidden">
             <span className="material-symbols-rounded text-2xl" aria-hidden="true">{isMenuOpen ? "close" : "menu"}</span>
           </button>
           <Link href="/" aria-label="خانه فروشگاه" className="hidden min-h-11 min-w-0 items-center gap-2 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring [direction:rtl] md:flex">
-            <Image src="/images/topstock360-logo.png" alt="" width={64} height={64} className="size-14 rounded-full object-contain shadow-lg shadow-black/25 ring-2 ring-white/25 sm:size-16" />
+            <Image src="/images/topstock360-logo.svg" alt="" width={64} height={64} className="size-14 rounded-full object-contain shadow-lg shadow-black/25 ring-2 ring-white/25 sm:size-16" />
           </Link>
           <Link href="/" aria-label="رفتن به صفحه اصلی" className="absolute right-12 grid size-11 shrink-0 place-items-center rounded-lg outline-none transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white/80 md:static">
             <span className="material-symbols-rounded text-2xl" aria-hidden="true">home</span>
@@ -198,7 +198,7 @@ export function StoreHeader() {
         </nav>
       </div>
 
-      <nav aria-label="منوی اصلی" className="relative z-[2] border-t border-white/15 bg-[#5f0d20]/60 text-white backdrop-blur-md">
+      <nav aria-label="منوی اصلی" className="relative z-[2] border-t border-white/15 bg-secondary/80 text-white backdrop-blur-md">
         <div className="mx-auto flex min-h-12 w-full items-center px-0 sm:px-5 lg:px-6 xl:px-8">
           <HeaderProductSearch mobile />
           <div className="hidden flex-wrap items-center gap-1 md:flex">
@@ -232,7 +232,7 @@ export function StoreHeader() {
                 <span>خانه</span>
               </Link>
               <Link href="/" onClick={closeMenu} aria-label="خانه فروشگاه" className="shrink-0 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                <Image src="/images/topstock360-logo.png" alt="لوگوی تاپ استوک ۳۶۰" width={112} height={112} className="size-28 rounded-full object-contain" />
+                <Image src="/images/topstock360-logo.svg" alt="لوگوی تاپ استوک ۳۶۰" width={112} height={112} className="size-28 rounded-full object-contain" />
               </Link>
               <button type="button" onClick={closeMenu} aria-label="بستن منو" className="grid size-11 place-items-center rounded-lg text-muted-foreground outline-none hover:bg-muted hover:text-primary focus-visible:ring-2 focus-visible:ring-ring">
                 <span className="material-symbols-rounded text-2xl" aria-hidden="true">close</span>

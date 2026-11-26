@@ -12,7 +12,7 @@ export function StoreFooter() {
       <div className="mx-auto grid w-full max-w-7xl gap-8 px-5 py-10 sm:px-8 md:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(15rem,1fr)_auto] lg:items-start lg:px-12">
         <div className="max-w-3xl">
           <Link href="/" aria-label="خانه فروشگاه" className="inline-flex min-h-11 items-center gap-2.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            <Image src="/images/topstock360-logo.png" alt="" width={48} height={48} className="size-12 rounded-full object-contain" />
+            <Image src="/images/topstock360-logo.svg" alt="" width={48} height={48} className="size-12 rounded-full object-contain" />
             <span className="text-lg font-black tracking-[-0.04em]">تاپ استوک ۳۶۰</span>
           </Link>
           <p className="mt-3 text-sm leading-8 text-muted-foreground">
