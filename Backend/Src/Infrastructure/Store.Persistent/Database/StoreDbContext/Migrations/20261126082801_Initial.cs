@@ -58,11 +58,10 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Code = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    DiscountPercent = table.Column<decimal>(type: "numeric(5,2)", precision: 5, scale: 2, nullable: false),
-                    MaxDiscountAmount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
+                    MaxDiscountAmount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    MinimumPurchaseAmount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
                     PaymentMethod = table.Column<int>(type: "integer", nullable: true),
-                    StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    ExpireAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -84,6 +83,7 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                     TargetId = table.Column<int>(type: "integer", nullable: false),
                     TargetName = table.Column<int>(type: "integer", nullable: false),
                     IsMain = table.Column<bool>(type: "boolean", nullable: false),
+                    DisplayOrder = table.Column<int>(type: "integer", nullable: true),
                     FileType = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -109,6 +109,19 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Provinces",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Provinces", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
                 {
@@ -124,39 +137,13 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    Email = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: true),
-                    PhoneNumber = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
-                    NationalCode = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: true),
-                    BirthDate = table.Column<string>(type: "text", nullable: true),
-                    Gender = table.Column<int>(type: "integer", nullable: false),
-                    Address = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    Latitude = table.Column<double>(type: "double precision", nullable: true),
-                    Longitude = table.Column<double>(type: "double precision", nullable: true),
-                    IsEmailVerified = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    IsPhoneNumberVerified = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "VerificationCodes",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PhoneNumber = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
-                    CodeHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    Code = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     IsUsed = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -196,6 +183,26 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Cities",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    ProvinceId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Cities", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Cities_Provinces_ProvinceId",
+                        column: x => x.ProvinceId,
+                        principalTable: "Provinces",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RoleAccess",
                 columns: table => new
                 {
@@ -219,6 +226,47 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: true),
+                    PhoneNumber = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
+                    NationalCode = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: true),
+                    BirthDate = table.Column<string>(type: "text", nullable: true),
+                    Gender = table.Column<int>(type: "integer", nullable: false),
+                    Address = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    PostalCode = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    ProvinceId = table.Column<int>(type: "integer", nullable: true),
+                    CityId = table.Column<int>(type: "integer", nullable: true),
+                    Latitude = table.Column<double>(type: "double precision", nullable: true),
+                    Longitude = table.Column<double>(type: "double precision", nullable: true),
+                    IsEmailVerified = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    IsPhoneNumberVerified = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Users_Cities_CityId",
+                        column: x => x.CityId,
+                        principalTable: "Cities",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Users_Provinces_ProvinceId",
+                        column: x => x.ProvinceId,
+                        principalTable: "Provinces",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Invoices",
                 columns: table => new
                 {
@@ -227,6 +275,7 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                     PaymentMethod = table.Column<int>(type: "integer", nullable: false),
                     DeliveryMethod = table.Column<int>(type: "integer", nullable: false),
                     PaymentStatus = table.Column<int>(type: "integer", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     DiscountCodeId = table.Column<int>(type: "integer", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -341,8 +390,19 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Amount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                    PaidAmount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
                     PaymentStatus = table.Column<int>(type: "integer", nullable: false),
                     PaymentMethod = table.Column<int>(type: "integer", nullable: false),
+                    OrderId = table.Column<long>(type: "bigint", nullable: true),
+                    RefId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    SaleReferenceId = table.Column<long>(type: "bigint", nullable: true),
+                    CardHolderPan = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: true),
+                    PayResponseCode = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
+                    CallbackResponseCode = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
+                    VerifyResponseCode = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
+                    SettleResponseCode = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
+                    VerifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    SettledAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     InvoiceId = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -591,9 +651,10 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ProductVariantId = table.Column<int>(type: "integer", nullable: false),
-                    Size = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Code = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
+                    Size = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Model = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    ColorName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    ColorCode = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -641,6 +702,11 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Cities_ProvinceId_Name",
+                table: "Cities",
+                columns: new[] { "ProvinceId", "Name" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_DiscountCodes_Code",
                 table: "DiscountCodes",
                 column: "Code",
@@ -680,6 +746,17 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                 name: "IX_Payments_InvoiceId",
                 table: "Payments",
                 column: "InvoiceId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payments_OrderId",
+                table: "Payments",
+                column: "OrderId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Payments_RefId",
+                table: "Payments",
+                column: "RefId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductBookmarks_ProductId_UserId",
@@ -729,15 +806,22 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductVariantAttributeValues_ProductVariantId_Size",
+                name: "IX_ProductVariantAttributeValues_ProductVariantId_Size_Model_C~",
                 table: "ProductVariantAttributeValues",
-                columns: new[] { "ProductVariantId", "Size" },
-                unique: true);
+                columns: new[] { "ProductVariantId", "Size", "Model", "ColorName", "ColorCode" },
+                unique: true)
+                .Annotation("Npgsql:NullsDistinct", false);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductVariants_ProductId_CombinationKey",
                 table: "ProductVariants",
                 columns: new[] { "ProductId", "CombinationKey" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Provinces_Name",
+                table: "Provinces",
+                column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -780,6 +864,11 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Users_CityId",
+                table: "Users",
+                column: "CityId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
                 table: "Users",
                 column: "Email",
@@ -790,6 +879,11 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                 table: "Users",
                 column: "PhoneNumber",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_ProvinceId",
+                table: "Users",
+                column: "ProvinceId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_VerificationCodes_PhoneNumber_IsUsed_ExpiresAt",
@@ -868,6 +962,12 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Cities");
+
+            migrationBuilder.DropTable(
+                name: "Provinces");
         }
     }
 }

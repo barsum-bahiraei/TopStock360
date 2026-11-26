@@ -12,8 +12,8 @@ using Store.Persistent.Database.StoreDbContext;
 namespace Store.Persistent.Database.StoreDbContext.Migrations
 {
     [DbContext(typeof(StoreDbContext))]
-    [Migration("20261018194337_AddVariantModelAndOptionalSize")]
-    partial class AddVariantModelAndOptionalSize
+    [Migration("20261126082801_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -182,6 +182,9 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                     b.Property<string>("BirthDate")
                         .HasColumnType("text");
 
+                    b.Property<int?>("CityId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -231,16 +234,23 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<int?>("ProvinceId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CityId");
 
                     b.HasIndex("Email")
                         .IsUnique();
 
                     b.HasIndex("PhoneNumber")
                         .IsUnique();
+
+                    b.HasIndex("ProvinceId");
 
                     b.ToTable("Users", (string)null);
                 });
@@ -413,6 +423,9 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("DisplayOrder")
+                        .HasColumnType("integer");
 
                     b.Property<int>("FileType")
                         .HasColumnType("integer");
@@ -648,6 +661,50 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                     b.ToTable("Payments", (string)null);
                 });
 
+            modelBuilder.Entity("Store.Domain.Locations.CityEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("ProvinceId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProvinceId", "Name");
+
+                    b.ToTable("Cities", (string)null);
+                });
+
+            modelBuilder.Entity("Store.Domain.Locations.ProvinceEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Provinces", (string)null);
+                });
+
             modelBuilder.Entity("Store.Domain.Products.ProductAttributeEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -836,12 +893,10 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ColorCode")
-                        .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
 
                     b.Property<string>("ColorName")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -990,6 +1045,23 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Store.Domain.Accounts.UserEntity", b =>
+                {
+                    b.HasOne("Store.Domain.Locations.CityEntity", "City")
+                        .WithMany("Users")
+                        .HasForeignKey("CityId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Store.Domain.Locations.ProvinceEntity", "Province")
+                        .WithMany("Users")
+                        .HasForeignKey("ProvinceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("City");
+
+                    b.Navigation("Province");
+                });
+
             modelBuilder.Entity("Store.Domain.Accounts.UserRoleEntity", b =>
                 {
                     b.HasOne("Store.Domain.Accounts.RoleEntity", "Role")
@@ -1119,6 +1191,17 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                         .IsRequired();
 
                     b.Navigation("Invoice");
+                });
+
+            modelBuilder.Entity("Store.Domain.Locations.CityEntity", b =>
+                {
+                    b.HasOne("Store.Domain.Locations.ProvinceEntity", "Province")
+                        .WithMany("Cities")
+                        .HasForeignKey("ProvinceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Province");
                 });
 
             modelBuilder.Entity("Store.Domain.Products.ProductAttributeEntity", b =>
@@ -1287,6 +1370,18 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                     b.Navigation("InvoiceItems");
 
                     b.Navigation("Payments");
+                });
+
+            modelBuilder.Entity("Store.Domain.Locations.CityEntity", b =>
+                {
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("Store.Domain.Locations.ProvinceEntity", b =>
+                {
+                    b.Navigation("Cities");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Store.Domain.Products.ProductBrandEntity", b =>
