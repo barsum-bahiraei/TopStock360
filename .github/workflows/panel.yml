@@ -6,7 +6,6 @@ on:
     paths:
       - "Panel/**"
       - ".github/workflows/panel.yml"
-      - ".github/workflows/_publish.yml"
   workflow_dispatch:
 
 jobs:

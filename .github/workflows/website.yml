@@ -6,7 +6,6 @@ on:
     paths:
       - "Website/**"
       - ".github/workflows/website.yml"
-      - ".github/workflows/_publish.yml"
   workflow_dispatch:
 
 jobs:
