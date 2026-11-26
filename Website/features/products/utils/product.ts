@@ -1,4 +1,5 @@
 import { ProductAttributeType, ProductAttributeUnit, type ProductVariant, type ProductVariantAttributeValue } from "../types/product";
+import { normalizePublicUrl } from "@/lib/public-url";
 
 export type VariantColor = {
   colorName?: string;
@@ -175,4 +176,3 @@ export function formatProductAttributeValue(value: string, type: ProductAttribut
 
   return trimmedValue;
 }
-import { normalizePublicUrl } from "@/lib/public-url";
