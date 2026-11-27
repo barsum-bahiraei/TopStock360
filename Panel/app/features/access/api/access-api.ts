@@ -14,30 +14,30 @@ import type {
 export const accessApi = {
   async listRoles(): Promise<Role[]> {
     return dedupe("roles", async () => {
-      const { data } = await httpClient.get<ApiResult<Role[]>>("/api/Account/Role");
+      const { data } = await httpClient.get<ApiResult<Role[]>>("/Account/Role");
       return resolveResult(data, "Unable to load roles");
     });
   },
 
   async createRole(name: string): Promise<Role> {
-    const { data } = await httpClient.post<ApiResult<Role>>("/api/Account/Role", { name });
+    const { data } = await httpClient.post<ApiResult<Role>>("/Account/Role", { name });
     return resolveResult(data, "Unable to create role");
   },
 
   async updateRole(id: number, name: string): Promise<Role> {
-    const { data } = await httpClient.put<ApiResult<Role>>(`/api/Account/Role/${id}`, { name });
+    const { data } = await httpClient.put<ApiResult<Role>>(`/Account/Role/${id}`, { name });
     return resolveResult(data, "Unable to update role");
   },
 
   async deleteRole(id: number): Promise<void> {
-    const { data } = await httpClient.delete<ApiResult<boolean>>(`/api/Account/Role/${id}`);
+    const { data } = await httpClient.delete<ApiResult<boolean>>(`/Account/Role/${id}`);
     resolveResult(data, "Unable to delete role");
   },
 
   async listControllerActions(): Promise<ControllerActions[]> {
     return dedupe("controller-actions", async () => {
       const { data } = await httpClient.get<ApiResult<ControllerActions[]>>(
-        "/api/Account/ControllerActions",
+        "/Account/ControllerActions",
       );
       return resolveResult(data, "Unable to load available permissions");
     });
@@ -46,7 +46,7 @@ export const accessApi = {
   async listRoleAccess(roleId: number): Promise<RoleAccess[]> {
     return dedupe(`role-access-${roleId}`, async () => {
       const { data } = await httpClient.get<ApiResult<RoleAccess[]>>(
-        `/api/Account/RoleAccess/${roleId}`,
+        `/Account/RoleAccess/${roleId}`,
       );
       return resolveResult(data, "Unable to load role permissions");
     });
@@ -57,7 +57,7 @@ export const accessApi = {
     controllerName: string,
     actionName: string,
   ): Promise<RoleAccess> {
-    const { data } = await httpClient.post<ApiResult<RoleAccess>>("/api/Account/RoleAccess", {
+    const { data } = await httpClient.post<ApiResult<RoleAccess>>("/Account/RoleAccess", {
       roleId,
       controllerName,
       actionName,
@@ -67,7 +67,7 @@ export const accessApi = {
 
   async deleteRoleAccess(id: number): Promise<void> {
     const { data } = await httpClient.delete<ApiResult<boolean>>(
-      `/api/Account/RoleAccess/${id}`,
+      `/Account/RoleAccess/${id}`,
     );
     resolveResult(data, "Unable to revoke permission");
   },
@@ -84,14 +84,14 @@ export const accessApi = {
       if (params?.phoneNumber) query.phoneNumber = params.phoneNumber;
       if (params?.birthDate) query.birthDate = params.birthDate;
       if (params?.gender != null) query.gender = String(params.gender);
-      const { data } = await httpClient.get<ApiResult<UserListPage>>("/api/Account/User", { params: query });
+      const { data } = await httpClient.get<ApiResult<UserListPage>>("/Account/User", { params: query });
       return resolveResult(data, "Unable to load users");
     });
   },
 
   async getUser(id: number): Promise<UserDetails> {
     return dedupe(`user-${id}`, async () => {
-      const { data } = await httpClient.get<ApiResult<UserDetails>>(`/api/Account/User/${id}`);
+      const { data } = await httpClient.get<ApiResult<UserDetails>>(`/Account/User/${id}`);
       return resolveResult(data, "Unable to load user roles");
     });
   },
@@ -102,7 +102,7 @@ export const accessApi = {
   },
 
   async assignRole(userId: number, roleId: number): Promise<{ id: number; userId: number; roleId: number }> {
-    const { data } = await httpClient.post<ApiResult<{ id: number; userId: number; roleId: number }>>("/api/Account/UserRole", {
+    const { data } = await httpClient.post<ApiResult<{ id: number; userId: number; roleId: number }>>("/Account/UserRole", {
       userId,
       roleId,
     });
@@ -110,7 +110,7 @@ export const accessApi = {
   },
 
   async removeUserRole(id: number): Promise<void> {
-    const { data } = await httpClient.delete<ApiResult<boolean>>(`/api/Account/UserRole/${id}`);
+    const { data } = await httpClient.delete<ApiResult<boolean>>(`/Account/UserRole/${id}`);
     resolveResult(data, "Unable to remove role");
   },
 };

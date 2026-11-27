@@ -1,5 +1,5 @@
-export const storeLatitude = 37.250805015534795;
-export const storeLongitude = 55.1845741520782;
+export const storeLatitude = 35.842144;
+export const storeLongitude = 50.972031;
 export const neshanWebUrl = `https://neshan.org/maps/share/${storeLatitude},${storeLongitude}`;
 
 export function getNeshanLocationUrl(userAgent: string): string {

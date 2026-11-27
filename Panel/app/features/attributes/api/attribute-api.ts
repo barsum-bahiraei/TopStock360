@@ -10,30 +10,30 @@ import type { AttributeUpdateOutput } from "../models/output/attribute-update-ou
 
 export const attributeApi = {
   async list(): Promise<AttributeListOutput[]> {
-    const { data } = await httpClient.get<ApiResult<AttributeListOutput[]>>("/api/Attribute");
+    const { data } = await httpClient.get<ApiResult<AttributeListOutput[]>>("/Attribute");
     return resolveResult(data, "Failed to load attributes");
   },
 
   async get(id: number): Promise<AttributeGetOutput> {
-    const { data } = await httpClient.get<ApiResult<AttributeGetOutput>>(`/api/Attribute/${id}`);
+    const { data } = await httpClient.get<ApiResult<AttributeGetOutput>>(`/Attribute/${id}`);
     return resolveResult(data, "Failed to load attribute");
   },
 
   async create(input: AttributeCreateInput): Promise<AttributeCreateOutput> {
-    const { data } = await httpClient.post<ApiResult<AttributeCreateOutput>>("/api/Attribute", input);
+    const { data } = await httpClient.post<ApiResult<AttributeCreateOutput>>("/Attribute", input);
     return resolveResult(data, "Failed to create attribute");
   },
 
   async update(id: number, input: AttributeUpdateInput): Promise<AttributeUpdateOutput> {
     const { data } = await httpClient.put<ApiResult<AttributeUpdateOutput>>(
-      `/api/Attribute/${id}`,
+      `/Attribute/${id}`,
       input
     );
     return resolveResult(data, "Failed to update attribute");
   },
 
   async remove(id: number): Promise<void> {
-    const { data } = await httpClient.delete<ApiResult<boolean>>(`/api/Attribute/${id}`);
+    const { data } = await httpClient.delete<ApiResult<boolean>>(`/Attribute/${id}`);
     if (!data?.isSuccess) {
       throw new Error(data?.errorMessage ?? "Failed to delete attribute");
     }

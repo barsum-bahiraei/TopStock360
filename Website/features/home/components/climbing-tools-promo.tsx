@@ -6,7 +6,7 @@ export function ClimbingToolsPromo() {
     <section aria-label="هندزفری و هدفون" className="bg-background px-4 pb-10 text-white sm:px-8 sm:pb-14 lg:px-12">
       <div className="mx-auto w-full max-w-[1700px]">
       <Link href="/shop" className="group relative block min-h-64 w-full overflow-hidden rounded-3xl border border-primary/20 shadow-xl shadow-primary-shadow outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:min-h-80 lg:min-h-96">
-        <Image src="/images/home/hero-headphones.jpg" alt="هدفون و هندزفری برای موسیقی و بازی" fill sizes="(max-width: 1700px) 100vw, 1700px" className="object-cover object-right transition-transform duration-700 group-hover:scale-[1.02] sm:object-center" />
+        <Image src="/images/home/headphones-brand.jpg" alt="هدفون و هندزفری برای موسیقی و بازی" fill sizes="(max-width: 1700px) 100vw, 1700px" className="object-cover object-right transition-transform duration-700 group-hover:scale-[1.02] sm:object-center" />
         <span className="absolute inset-0 bg-secondary/45 sm:bg-gradient-to-r sm:from-secondary/90 sm:via-secondary/55 sm:to-transparent" aria-hidden="true" />
 
         <span className="relative z-10 flex min-h-64 items-center px-5 py-8 sm:min-h-80 sm:px-12 lg:min-h-96 lg:px-16">

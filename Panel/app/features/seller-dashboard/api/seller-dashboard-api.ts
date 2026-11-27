@@ -51,7 +51,7 @@ export const sellerDashboardApi = {
     const query = rangeQuery(range);
     return dedupe(listKey("Dashboard", query), async () => {
       const { data } = await httpClient.get<ApiResult<SellerDashboardStats>>(
-        "/api/Seller/Dashboard",
+        "/Seller/Dashboard",
         { params: query },
       );
       return resolveResult(data, "Unable to load dashboard stats");
@@ -64,7 +64,7 @@ export const sellerDashboardApi = {
     const query = { ...rangeQuery(range), GroupBy: range.groupBy };
     return dedupe(listKey("SalesChart", query), async () => {
       const { data } = await httpClient.get<ApiResult<SalesChartPoint[]>>(
-        "/api/Seller/SalesChart",
+        "/Seller/SalesChart",
         { params: query },
       );
       return resolveResult(data, "Unable to load sales chart");
@@ -79,7 +79,7 @@ export const sellerDashboardApi = {
     const query = { ...rangeQuery(range), ...pageQuery(page, pageSize) };
     return dedupe(listKey("TopProducts", query), async () => {
       const { data } = await httpClient.get<ApiResult<PagedResult<TopProductItem>>>(
-        "/api/Seller/TopProducts",
+        "/Seller/TopProducts",
         { params: query },
       );
       return resolveResult(data, "Unable to load top products");
@@ -94,7 +94,7 @@ export const sellerDashboardApi = {
     const query = { ...rangeQuery(range), ...pageQuery(page, pageSize) };
     return dedupe(listKey("TopVariants", query), async () => {
       const { data } = await httpClient.get<ApiResult<PagedResult<TopVariantItem>>>(
-        "/api/Seller/TopVariants",
+        "/Seller/TopVariants",
         { params: query },
       );
       return resolveResult(data, "Unable to load top variants");
@@ -105,7 +105,7 @@ export const sellerDashboardApi = {
     const query = rangeQuery(range);
     return dedupe(listKey("OrderStatuses", query), async () => {
       const { data } = await httpClient.get<ApiResult<OrderStatusCountItem[]>>(
-        "/api/Seller/OrderStatuses",
+        "/Seller/OrderStatuses",
         { params: query },
       );
       return resolveResult(data, "Unable to load order statuses");
@@ -123,7 +123,7 @@ export const sellerDashboardApi = {
     };
     return dedupe(listKey("LowStock", query), async () => {
       const { data } = await httpClient.get<ApiResult<PagedResult<LowStockItem>>>(
-        "/api/Seller/LowStock",
+        "/Seller/LowStock",
         { params: query },
       );
       return resolveResult(data, "Unable to load low stock items");
@@ -138,7 +138,7 @@ export const sellerDashboardApi = {
     const query = { ...rangeQuery(range), ...pageQuery(page, pageSize) };
     return dedupe(listKey("ProductsWithoutSales", query), async () => {
       const { data } = await httpClient.get<ApiResult<PagedResult<ProductWithoutSalesItem>>>(
-        "/api/Seller/ProductsWithoutSales",
+        "/Seller/ProductsWithoutSales",
         { params: query },
       );
       return resolveResult(data, "Unable to load products without sales");
@@ -149,7 +149,7 @@ export const sellerDashboardApi = {
     const query = rangeQuery(range);
     return dedupe(listKey("CategorySales", query), async () => {
       const { data } = await httpClient.get<ApiResult<CategorySalesItem[]>>(
-        "/api/Seller/CategorySales",
+        "/Seller/CategorySales",
         { params: query },
       );
       return resolveResult(data, "Unable to load category sales");
@@ -160,7 +160,7 @@ export const sellerDashboardApi = {
     const query = rangeQuery(range);
     return dedupe(listKey("DiscountStatistics", query), async () => {
       const { data } = await httpClient.get<ApiResult<DiscountStatisticsItem[]>>(
-        "/api/Seller/DiscountStatistics",
+        "/Seller/DiscountStatistics",
         { params: query },
       );
       return resolveResult(data, "Unable to load discount statistics");
@@ -177,7 +177,7 @@ export const sellerDashboardApi = {
     if (invoiceId !== undefined) query.InvoiceId = String(invoiceId);
     return dedupe(listKey("OrdersAttention", query), async () => {
       const { data } = await httpClient.get<ApiResult<OrderAttentionItem[]>>(
-        "/api/Seller/Orders/Attention",
+        "/Seller/Orders/Attention",
         { params: query },
       );
       return resolveResult(data, "Unable to load orders needing attention");
@@ -186,7 +186,7 @@ export const sellerDashboardApi = {
 
   async getOrderDetails(id: number): Promise<SellerOrderDetail> {
     const { data } = await httpClient.get<ApiResult<SellerOrderDetail>>(
-      `/api/Seller/Order/${id}`,
+      `/Seller/Order/${id}`,
     );
     return resolveResult(data, "Unable to load order details");
   },
@@ -196,7 +196,7 @@ export const sellerDashboardApi = {
     input: OrderStatusUpdateInput,
   ): Promise<OrderStatusUpdateOutput> {
     const { data } = await httpClient.put<ApiResult<OrderStatusUpdateOutput>>(
-      `/api/Seller/Order/${id}/Status`,
+      `/Seller/Order/${id}/Status`,
       input,
     );
     return resolveResult(data, "Unable to update order status");

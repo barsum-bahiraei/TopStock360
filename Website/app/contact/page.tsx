@@ -45,11 +45,8 @@ export default function ContactPage() {
                 </div>
 
                 <div className="mt-8 space-y-4 border-t border-secondary-foreground/15 pt-6">
-                  <ContactRow icon="location_on" label="کد پستی" value="۴۹۷۹۱۴۶۱۳۱" />
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <ContactRow icon="phone_iphone" label="شماره همراه" value="۰۹۳۰۶۸۱۵۸۵۸" href="tel:09306815858" />
-                    <ContactRow icon="phone" label="شماره ثابت" value="۰۱۷۳۳۵۵۲۱۱۰" href="tel:01733552110" />
-                  </div>
+                  <ContactRow icon="phone" label="شماره ثابت" value="۰۱۷۳۳۵۵۲۱۱۰" href="tel:01733552110" />
+                  <ContactRow icon="phone_iphone" label="شماره همراه" value="۰۹۱۲۴۸۵۷۰۴۸" href="tel:09124857048" />
                   <ContactRow icon="schedule" label="ساعت کاری" value={<>شنبه تا پنج‌شنبه: ۸ صبح تا ۹ شب<br />جمعه: ۱۱ صبح تا ۹ شب</>} />
                 </div>
               </div>
@@ -61,7 +58,7 @@ export default function ContactPage() {
                 <p className="text-sm font-bold text-primary">موقعیت تاپ استوک ۳۶۰</p>
                 <h2 className="mt-3 text-2xl font-black sm:text-3xl">لوکیشن فروشگاه</h2>
                 <p className="mt-4 max-w-md text-sm leading-7 text-muted-foreground">
-                  آدرس دقیق فروشگاه را روی نقشه پیدا کنید و برای مسیریابی، آن را در برنامهٔ نشان باز کنید.
+                  آدرس: کرج، گوهردشت، روبه‌روی خیابان داریوش، ابتدای خیابان روزبهانی، مرکز خرید الانیوم، طبقه همکف، واحد ۴۴، فروشگاه تاپ استوک
                 </p>
 
                 <div className="my-8 min-h-64 flex-1 overflow-hidden rounded-2xl border border-primary/35 bg-background/45 p-1.5 text-center">

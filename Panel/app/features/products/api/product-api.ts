@@ -34,7 +34,7 @@ export const productApi = {
     if (params?.isAvailable != null) query.isAvailable = String(params.isAvailable);
     const key = `products:${JSON.stringify(query)}`;
     return dedupe(key, async () => {
-      const { data } = await httpClient.get<ApiResult<ProductListPage>>("/api/Product", { params: query });
+      const { data } = await httpClient.get<ApiResult<ProductListPage>>("/Product", { params: query });
       return resolveResult(data, "Failed to load products");
     });
   },
@@ -43,14 +43,14 @@ export const productApi = {
     input: ProductPricePercentageUpdateInput
   ): Promise<ProductPricePercentageUpdateOutput> {
     const { data } = await httpClient.put<ApiResult<ProductPricePercentageUpdateOutput>>(
-      "/api/Product/Prices/Percentage",
+      "/Product/Prices/Percentage",
       input
     );
     return resolveResult(data, "Failed to update product prices");
   },
 
   async create(input: ProductCreateInput): Promise<ProductCreateOutput> {
-    const { data } = await httpClient.post<ApiResult<ProductCreateOutput>>("/api/Product", input);
+    const { data } = await httpClient.post<ApiResult<ProductCreateOutput>>("/Product", input);
     return resolveResult(data, "Failed to create product");
   },
 
@@ -62,7 +62,7 @@ export const productApi = {
     if (pending) return pending;
 
     const request = httpClient
-      .get<ApiResult<ProductGetOutput>>(`/api/Product/${id}`)
+      .get<ApiResult<ProductGetOutput>>(`/Product/${id}`)
       .then(({ data }) => {
         const product = resolveResult(data, "Failed to load product");
         productCache.set(id, product);
@@ -77,7 +77,7 @@ export const productApi = {
 
   async update(id: number, input: ProductUpdateInput): Promise<ProductUpdateOutput> {
     const { data } = await httpClient.put<ApiResult<ProductUpdateOutput>>(
-      `/api/Product/${id}`,
+      `/Product/${id}`,
       input
     );
     const product = resolveResult(data, "Failed to update product");
@@ -86,7 +86,7 @@ export const productApi = {
   },
 
   async remove(id: number): Promise<void> {
-    const { data } = await httpClient.delete<ApiResult<boolean>>(`/api/Product/${id}`);
+    const { data } = await httpClient.delete<ApiResult<boolean>>(`/Product/${id}`);
     if (!data?.isSuccess) {
       throw new Error(data?.errorMessage ?? "Failed to delete product");
     }
@@ -103,14 +103,14 @@ export const productApi = {
     formData.append("isMain", String(input.isMain));
     formData.append("fileType", String(input.fileType));
 
-    const { data } = await httpClient.post<ApiResult<ProductImageOutput>>("/api/File", formData);
+    const { data } = await httpClient.post<ApiResult<ProductImageOutput>>("/File", formData);
     const image = resolveResult(data, `Failed to upload ${input.file.name}`);
     productCache.delete(input.productId);
     return image;
   },
 
   async removeImage(id: number): Promise<void> {
-    const { data } = await httpClient.delete<ApiResult<boolean>>(`/api/File/${id}`);
+    const { data } = await httpClient.delete<ApiResult<boolean>>(`/File/${id}`);
     if (!data?.isSuccess) {
       throw new Error(data?.errorMessage ?? "Failed to delete image");
     }
@@ -118,13 +118,13 @@ export const productApi = {
   },
 
   async setMainImage(id: number): Promise<void> {
-    const { data } = await httpClient.put<ApiResult<boolean>>(`/api/File/${id}/Main`);
+    const { data } = await httpClient.put<ApiResult<boolean>>(`/File/${id}/Main`);
     resolveResult(data, "Failed to set main image");
     productCache.clear();
   },
 
   async reorderImages(ids: number[]): Promise<void> {
-    const { data } = await httpClient.put<ApiResult<boolean>>("/api/File/Order", { ids });
+    const { data } = await httpClient.put<ApiResult<boolean>>("/File/Order", { ids });
     resolveResult(data, "Failed to reorder images");
     productCache.clear();
   },

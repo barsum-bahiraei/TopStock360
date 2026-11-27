@@ -10,7 +10,6 @@ public class KavenegarOptions
 
     public string ApiKey { get; set; } = string.Empty;
     public string Template { get; set; } = string.Empty;
-    public string WelcomeTemplate { get; set; } = string.Empty;
     public string DiscountTemplate { get; set; } = string.Empty;
 }
 
@@ -31,17 +30,6 @@ public class KavenegarSmsService(HttpClient httpClient, IOptions<KavenegarOption
             ["token"] = code,
             ["template"] = settings.Template
         }, cancellation);
-    }
-
-    public async Task SendWelcomeDiscountAsync(string phoneNumber, string code, decimal amountToman,
-        decimal minimumPurchaseAmountToman, DateTime expireAt, CancellationToken cancellation)
-    {
-        var settings = options.Value;
-        if (string.IsNullOrWhiteSpace(settings.ApiKey) || string.IsNullOrWhiteSpace(settings.WelcomeTemplate))
-            throw new InvalidOperationException("Kavenegar welcome template configuration is missing");
-
-        await SendDiscountAsync(settings.ApiKey, settings.WelcomeTemplate, phoneNumber, code, amountToman,
-            minimumPurchaseAmountToman, expireAt, cancellation);
     }
 
     public async Task SendAssignedDiscountAsync(string phoneNumber, string code, decimal amountToman,

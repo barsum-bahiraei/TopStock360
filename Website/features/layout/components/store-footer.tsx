@@ -12,7 +12,7 @@ export function StoreFooter() {
       <div className="mx-auto grid w-full max-w-7xl gap-8 px-5 py-10 sm:px-8 md:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_minmax(15rem,1fr)_auto] lg:items-start lg:px-12">
         <div className="max-w-3xl">
           <Link href="/" aria-label="خانه فروشگاه" className="inline-flex min-h-11 items-center gap-2.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            <Image src="/images/topstock360-logo.svg" alt="" width={48} height={48} className="size-12 rounded-full object-contain" />
+            <Image src="/images/top-stock-logo.png" alt="" width={48} height={48} className="size-12 rounded-full object-contain" />
             <span className="text-lg font-black tracking-[-0.04em]">تاپ استوک ۳۶۰</span>
           </Link>
           <p className="mt-3 text-sm leading-8 text-muted-foreground">
@@ -26,7 +26,7 @@ export function StoreFooter() {
         <section aria-labelledby="footer-contact-title" className="min-w-0">
           <h2 id="footer-contact-title" className="text-lg font-black">پشتیبانی و راه‌های ارتباطی</h2>
           <div className="mt-4 space-y-1 text-sm">
-            <a href="tel:09306815858" className="flex min-h-11 flex-wrap items-center justify-between gap-2 rounded-lg px-2 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"><span className="text-muted-foreground">شماره همراه</span><span dir="ltr" className="font-bold">۰۹۳۰۶۸۱۵۸۵۸</span></a>
+            <a href={`tel:${whatsappSupportNumber}`} className="flex min-h-11 flex-wrap items-center justify-between gap-2 rounded-lg px-2 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"><span className="text-muted-foreground">شماره همراه</span><span dir="ltr" className="font-bold">{whatsappSupportNumber}</span></a>
             <a href="tel:01733552110" className="flex min-h-11 flex-wrap items-center justify-between gap-2 rounded-lg px-2 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"><span className="text-muted-foreground">شماره ثابت</span><span dir="ltr" className="font-bold">۰۱۷۳۳۵۵۲۱۱۰</span></a>
             <a href={whatsappSupportUrl} target="_blank" rel="noreferrer" className="flex min-h-11 flex-wrap items-center justify-between gap-2 rounded-lg px-2 outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"><span className="text-muted-foreground">پشتیبانی واتساپ</span><span dir="ltr" className="font-bold">{whatsappSupportNumber}</span></a>
           </div>

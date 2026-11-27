@@ -19,7 +19,7 @@ export const discountCodeApi = {
   async list(): Promise<DiscountCodeListOutput[]> {
     return dedupe("discount-codes", async () => {
       const { data } = await httpClient.get<ApiResult<DiscountCodeListOutput[]>>(
-        "/api/Account/DiscountCode",
+        "/Account/DiscountCode",
       );
       return resolveResult(data, "Unable to load discount codes");
     });
@@ -27,14 +27,14 @@ export const discountCodeApi = {
 
   async get(id: number): Promise<DiscountCodeOutput> {
     const { data } = await httpClient.get<ApiResult<DiscountCodeOutput>>(
-      `/api/Account/DiscountCode/${id}`,
+      `/Account/DiscountCode/${id}`,
     );
     return resolveResult(data, "Unable to load discount code");
   },
 
   async create(input: DiscountCodeUpsertInput): Promise<DiscountCodeOutput> {
     const { data } = await httpClient.post<ApiResult<DiscountCodeOutput>>(
-      "/api/Account/DiscountCode",
+      "/Account/DiscountCode",
       normalizeInput(input),
     );
     return resolveResult(data, "Unable to create discount code");
@@ -42,7 +42,7 @@ export const discountCodeApi = {
 
   async update(id: number, input: DiscountCodeUpsertInput): Promise<DiscountCodeOutput> {
     const { data } = await httpClient.put<ApiResult<DiscountCodeOutput>>(
-      `/api/Account/DiscountCode/${id}`,
+      `/Account/DiscountCode/${id}`,
       normalizeInput(input),
     );
     return resolveResult(data, "Unable to update discount code");
@@ -50,7 +50,7 @@ export const discountCodeApi = {
 
   async remove(id: number): Promise<void> {
     const { data } = await httpClient.delete<ApiResult<boolean>>(
-      `/api/Account/DiscountCode/${id}`,
+      `/Account/DiscountCode/${id}`,
     );
     resolveResult(data, "Unable to delete discount code");
   },

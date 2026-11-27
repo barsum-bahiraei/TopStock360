@@ -7,7 +7,7 @@ import type { LocationOption } from "../models/location";
 export const locationApi = {
   provinces(): Promise<LocationOption[]> {
     return dedupe("locations:provinces", async () => {
-      const { data } = await httpClient.get<ApiResult<LocationOption[]>>("/api/Location/Province");
+      const { data } = await httpClient.get<ApiResult<LocationOption[]>>("/Location/Province");
       return resolveResult(data, "بارگذاری استان‌ها ناموفق بود");
     });
   },
@@ -15,7 +15,7 @@ export const locationApi = {
   cities(provinceId: number): Promise<LocationOption[]> {
     return dedupe(`locations:cities:${provinceId}`, async () => {
       const { data } = await httpClient.get<ApiResult<LocationOption[]>>(
-        `/api/Location/Province/${provinceId}/City`,
+        `/Location/Province/${provinceId}/City`,
       );
       return resolveResult(data, "بارگذاری شهرها ناموفق بود");
     });

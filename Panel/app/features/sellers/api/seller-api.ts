@@ -19,7 +19,7 @@ export const sellerApi = {
   async list(): Promise<SellerListOutput[]> {
     if (!sellersRequest) {
       sellersRequest = httpClient
-        .get<ApiResult<SellerListOutput[]>>("/api/Seller")
+        .get<ApiResult<SellerListOutput[]>>("/Seller")
         .then(({ data }) => resolveResult(data, "Failed to load sellers"))
         .finally(() => {
           sellersRequest = null;
@@ -33,7 +33,7 @@ export const sellerApi = {
     if (pending) return pending;
 
     const request = httpClient
-      .get<ApiResult<SellerGetOutput>>(`/api/Seller/${id}`)
+      .get<ApiResult<SellerGetOutput>>(`/Seller/${id}`)
       .then(({ data }) => resolveResult(data, "Failed to load seller"))
       .finally(() => {
         sellerRequests.delete(id);
@@ -43,12 +43,12 @@ export const sellerApi = {
   },
 
   async create(input: SellerCreateInput): Promise<SellerCreateOutput> {
-    const { data } = await httpClient.post<ApiResult<SellerCreateOutput>>("/api/Seller", input);
+    const { data } = await httpClient.post<ApiResult<SellerCreateOutput>>("/Seller", input);
     return resolveResult(data, "Failed to create seller");
   },
 
   async update(id: number, input: SellerUpdateInput): Promise<SellerUpdateOutput> {
-    const { data } = await httpClient.put<ApiResult<SellerUpdateOutput>>(`/api/Seller/${id}`, input);
+    const { data } = await httpClient.put<ApiResult<SellerUpdateOutput>>(`/Seller/${id}`, input);
     return resolveResult(data, "Failed to update seller");
   },
 
@@ -63,14 +63,14 @@ export const sellerApi = {
     formData.append("fileType", String(input.fileType));
 
     const request = input.imageId === undefined
-      ? httpClient.post<ApiResult<SellerImageOutput>>("/api/File", formData)
-      : httpClient.put<ApiResult<SellerImageOutput>>(`/api/File/${input.imageId}`, formData);
+      ? httpClient.post<ApiResult<SellerImageOutput>>("/File", formData)
+      : httpClient.put<ApiResult<SellerImageOutput>>(`/File/${input.imageId}`, formData);
     const { data } = await request;
     return resolveResult(data, "Failed to save seller image");
   },
 
   async remove(id: number): Promise<void> {
-    const { data } = await httpClient.delete<ApiResult<boolean>>(`/api/Seller/${id}`);
+    const { data } = await httpClient.delete<ApiResult<boolean>>(`/Seller/${id}`);
     resolveResult(data, "Failed to delete seller");
   },
 };

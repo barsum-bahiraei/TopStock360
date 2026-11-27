@@ -18,7 +18,7 @@ const promos = [
     title: "برای هر نیاز، یک انتخاب دقیق",
     description: "از کارهای روزمره تا طراحی و برنامه‌نویسی، مدل مناسب خودت را پیدا کن.",
     action: "مشاهده لپ‌تاپ‌ها",
-    image: "/images/home/laptop-workspace.jpg",
+    image: "/images/home/laptop-workspace-brand.jpg",
     imageAlt: "لپ‌تاپ مناسب کار روزمره",
   },
   {
@@ -27,7 +27,7 @@ const promos = [
     title: "جزئیات صدا را از دست نده",
     description: "برای موسیقی، تماس یا بازی، صدایی شفاف و اتصال پایدار را تجربه کن.",
     action: "مشاهده محصولات صوتی",
-    image: "/images/home/hero-headphones.jpg",
+    image: "/images/home/headphones-brand.jpg",
     imageAlt: "هدفون و محصولات صوتی دیجیتال",
   },
 ] as const satisfies readonly Promo[];
@@ -39,7 +39,7 @@ const outdoorEssentialsPromos = [
     title: "میز کارت را حرفه‌ای‌تر کن",
     description: "ماوس، کیبورد، هاب و شارژر مناسب را کنار لپ‌تاپت داشته باش.",
     action: "مشاهده لوازم جانبی",
-    image: "/images/home/laptop-gold.jpg",
+    image: "/images/home/laptop-brand-gold.jpg",
     imageAlt: "لپ‌تاپ و لوازم جانبی میز کار",
   },
   {
@@ -48,7 +48,7 @@ const outdoorEssentialsPromos = [
     title: "خرید هوشمند با قیمت بهتر",
     description: "محصولات منتخب دیجیتال را با شرایط مناسب‌تر بررسی و مقایسه کن.",
     action: "مشاهده پیشنهادها",
-    image: "/images/home/laptop-warm.jpg",
+    image: "/images/home/laptop-brand-teal.jpg",
     imageAlt: "مجموعه لپ‌تاپ‌های منتخب فروشگاه",
   },
 ] as const satisfies readonly Promo[];

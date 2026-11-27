@@ -21,7 +21,7 @@ export const categoryApi = {
     if (categoriesCache) return categoriesCache;
     if (!categoriesRequest) {
       categoriesRequest = httpClient
-        .get<ApiResult<CategoryListOutput[]>>("/api/Category")
+        .get<ApiResult<CategoryListOutput[]>>("/Category")
         .then(({ data }) => {
           categoriesCache = resolveResult(data, "Failed to load categories");
           return categoriesCache;
@@ -34,12 +34,12 @@ export const categoryApi = {
   },
 
   async get(id: number): Promise<CategoryGetOutput> {
-    const { data } = await httpClient.get<ApiResult<CategoryGetOutput>>(`/api/Category/${id}`);
+    const { data } = await httpClient.get<ApiResult<CategoryGetOutput>>(`/Category/${id}`);
     return resolveResult(data, "Failed to load category");
   },
 
   async create(input: CategoryCreateInput): Promise<CategoryCreateOutput> {
-    const { data } = await httpClient.post<ApiResult<CategoryCreateOutput>>("/api/Category", input);
+    const { data } = await httpClient.post<ApiResult<CategoryCreateOutput>>("/Category", input);
     const category = resolveResult(data, "Failed to create category");
     categoriesCache = null;
     return category;
@@ -47,7 +47,7 @@ export const categoryApi = {
 
   async update(id: number, input: CategoryUpdateInput): Promise<CategoryUpdateOutput> {
     const { data } = await httpClient.put<ApiResult<CategoryUpdateOutput>>(
-      `/api/Category/${id}`,
+      `/Category/${id}`,
       input
     );
     const category = resolveResult(data, "Failed to update category");
@@ -56,7 +56,7 @@ export const categoryApi = {
   },
 
   async remove(id: number): Promise<void> {
-    const { data } = await httpClient.delete<ApiResult<boolean>>(`/api/Category/${id}`);
+    const { data } = await httpClient.delete<ApiResult<boolean>>(`/Category/${id}`);
     if (!data?.isSuccess) {
       throw new Error(data?.errorMessage ?? "Failed to delete category");
     }
@@ -72,7 +72,7 @@ export const categoryApi = {
     if (pending) return pending;
 
     const request = httpClient
-      .get<ApiResult<CategoryAttributeListOutput[]>>(`/api/Category/Attribute/${categoryId}`)
+      .get<ApiResult<CategoryAttributeListOutput[]>>(`/Category/Attribute/${categoryId}`)
       .then(({ data }) => {
         const list = resolveResult(data, "Failed to load category attributes");
         categoryAttributesCache.set(categoryId, list);
@@ -87,7 +87,7 @@ export const categoryApi = {
 
   async addCategoryAttribute(input: CategoryAttributeAddInput): Promise<CategoryAttributeAddOutput> {
     const { data } = await httpClient.post<ApiResult<CategoryAttributeAddOutput>>(
-      "/api/Category/Attribute",
+      "/Category/Attribute",
       input
     );
     const item = resolveResult(data, "Failed to add attribute to category");
@@ -97,7 +97,7 @@ export const categoryApi = {
 
   async removeCategoryAttribute(id: number): Promise<void> {
     const { data } = await httpClient.delete<ApiResult<boolean>>(
-      `/api/Category/Attribute/${id}`
+      `/Category/Attribute/${id}`
     );
     if (!data?.isSuccess) {
       throw new Error(data?.errorMessage ?? "Failed to remove attribute from category");

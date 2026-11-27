@@ -15,7 +15,7 @@ export const brandApi = {
   async list(): Promise<Brand[]> {
     if (!brandsRequest) {
       brandsRequest = httpClient
-        .get<ApiResult<Brand[]>>("/api/Product/Brand")
+        .get<ApiResult<Brand[]>>("/Product/Brand")
         .then(({ data }) => resolveResult(data, "Failed to load brands"))
         .finally(() => {
           brandsRequest = null;
@@ -25,17 +25,17 @@ export const brandApi = {
   },
 
   async get(id: number): Promise<Brand> {
-    const { data } = await httpClient.get<ApiResult<Brand>>(`/api/Product/Brand/${id}`);
+    const { data } = await httpClient.get<ApiResult<Brand>>(`/Product/Brand/${id}`);
     return resolveResult(data, "Failed to load brand");
   },
 
   async create(input: BrandInput): Promise<BrandSaveOutput> {
-    const { data } = await httpClient.post<ApiResult<BrandSaveOutput>>("/api/Product/Brand", input);
+    const { data } = await httpClient.post<ApiResult<BrandSaveOutput>>("/Product/Brand", input);
     return resolveResult(data, "Failed to create brand");
   },
 
   async update(id: number, input: BrandInput): Promise<BrandSaveOutput> {
-    const { data } = await httpClient.put<ApiResult<BrandSaveOutput>>(`/api/Product/Brand/${id}`, input);
+    const { data } = await httpClient.put<ApiResult<BrandSaveOutput>>(`/Product/Brand/${id}`, input);
     return resolveResult(data, "Failed to update brand");
   },
 
@@ -50,14 +50,14 @@ export const brandApi = {
     formData.append("fileType", String(input.fileType));
 
     const request = input.imageId === undefined
-      ? httpClient.post<ApiResult<BrandImage>>("/api/File", formData)
-      : httpClient.put<ApiResult<BrandImage>>(`/api/File/${input.imageId}`, formData);
+      ? httpClient.post<ApiResult<BrandImage>>("/File", formData)
+      : httpClient.put<ApiResult<BrandImage>>(`/File/${input.imageId}`, formData);
     const { data } = await request;
     return resolveResult(data, "Failed to save brand image");
   },
 
   async remove(id: number): Promise<void> {
-    const { data } = await httpClient.delete<ApiResult<boolean>>(`/api/Product/Brand/${id}`);
+    const { data } = await httpClient.delete<ApiResult<boolean>>(`/Product/Brand/${id}`);
     resolveResult(data, "Failed to delete brand");
   },
 };

@@ -16,7 +16,7 @@ export function StoreLocationMap() {
     void import("leaflet").then(({ default: L }) => {
       if (cancelled || !mapElementRef.current) return;
 
-      map = L.map(mapElementRef.current, { scrollWheelZoom: false }).setView([latitude, longitude], 15);
+      map = L.map(mapElementRef.current, { scrollWheelZoom: false }).setView([latitude, longitude], 16);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>',
@@ -25,9 +25,9 @@ export function StoreLocationMap() {
 
       L.circleMarker([latitude, longitude], {
         radius: 11,
-        color: "#ea580c",
+        color: "#0c353e",
         weight: 4,
-        fillColor: "#f97316",
+        fillColor: "#e2be78",
         fillOpacity: 1,
       }).addTo(map).bindPopup("تاپ استوک ۳۶۰").openPopup();
     });

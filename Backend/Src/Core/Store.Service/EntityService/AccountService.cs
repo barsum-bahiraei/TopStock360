@@ -8,7 +8,6 @@ using Microsoft.IdentityModel.Tokens;
 using Store.Domain.Accounts;
 using Store.Domain.Accounts.Models.Input;
 using Store.Domain.Accounts.Models.Output;
-using Store.Domain.Invoices;
 using Store.Domain.Locations;
 using Store.Service.ProviderService;
 
@@ -243,9 +242,6 @@ public class AccountService(
 
         var (user, isNewUser) = authentication.Value;
 
-        // if (isNewUser)
-        //     await CreateWelcomeDiscountAsync(user, cancellation);
-
         var (token, expiresAt) = GenerateToken(user.Id);
 
         return Result<UserOtpVerifyOutput>.Success(new UserOtpVerifyOutput
@@ -423,49 +419,6 @@ public class AccountService(
 
     public async Task<Result<bool>> RoleAccessDeleteAsync(int id, CancellationToken cancellation) =>
         await roleService.RoleAccessDeleteAsync(id, cancellation);
-
-    private async Task CreateWelcomeDiscountAsync(UserEntity user, CancellationToken cancellation)
-    {
-        var amount = configuration.GetValue<decimal>("WelcomeDiscount:AmountToman");
-        var minimumPurchase = configuration.GetValue<decimal>("WelcomeDiscount:MinimumPurchaseAmountToman");
-        var validityDays = configuration.GetValue<int>("WelcomeDiscount:ValidityDays");
-        if (amount <= 0 || minimumPurchase < 0 || validityDays <= 0)
-        {
-            logger.LogError("Welcome discount configuration is invalid");
-            return;
-        }
-
-        var expireAt = DateTime.UtcNow.AddDays(validityDays);
-        var code = $"WELCOME{user.Id}{RandomNumberGenerator.GetInt32(100000, 1000000)}";
-
-        try
-        {
-            await accountRepository.DiscountCodeCreateAsync(new DiscountCodeEntity
-            {
-                Code = code,
-                MaxDiscountAmount = amount,
-                MinimumPurchaseAmount = minimumPurchase,
-                PaymentMethod = PaymentMethodEnum.Online,
-                ExpireAt = expireAt,
-                IsActive = true,
-                UserDiscountCodes =
-                [
-                    new UserDiscountCodeEntity
-                    {
-                        UserId = user.Id,
-                        IsUsed = false
-                    }
-                ]
-            }, cancellation);
-
-            await smsService.SendWelcomeDiscountAsync(user.PhoneNumber, code, amount, minimumPurchase, expireAt,
-                cancellation);
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            logger.LogError(exception, "Creating or sending welcome discount failed for user {UserId}", user.Id);
-        }
-    }
 
     private (string Token, DateTime ExpiresAt) GenerateToken(int id)
     {
