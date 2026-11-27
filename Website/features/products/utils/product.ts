@@ -140,8 +140,11 @@ export function matchVariantBySelection(
 
 export function getProductImageUrl(url?: string | null) {
   if (!url) return null;
-  if (/^https?:\/\//i.test(url)) return url;
   const baseUrl = normalizePublicUrl(process.env.NEXT_PUBLIC_MINIO_BASE_URL)?.replace(/\/$/, "");
+  if (/^https?:\/\//i.test(url)) {
+    const parsedUrl = new URL(url);
+    return parsedUrl.hostname === "minio" && baseUrl ? `${baseUrl}${parsedUrl.pathname}` : url;
+  }
   return baseUrl ? `${baseUrl}/${url.replace(/^\//, "")}` : null;
 }
 
