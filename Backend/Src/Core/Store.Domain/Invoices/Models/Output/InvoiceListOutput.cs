@@ -4,6 +4,8 @@ public class InvoiceListOutput
 {
     public int Id { get; set; }
     public decimal TotalPrice { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public string? DiscountCode { get; set; }
     public int TotalCount { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? ExpiresAt { get; set; }

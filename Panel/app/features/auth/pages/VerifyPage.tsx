@@ -5,6 +5,7 @@ import { useTheme } from "~/contexts/theme-context";
 import { secondsUntil } from "~/shared/utils/date-time";
 import {
   canAccessPanel,
+  getDefaultPanelPath,
 } from "~/features/auth/utils/authorization";
 import loginImage from "~/assets/images/login.jpg";
 
@@ -35,7 +36,7 @@ export default function VerifyPage() {
 
     if (isAuthenticated && currentUser) {
       navigate(
-        canAccessPanel(currentUser) ? "/dashboard" : "/404",
+        getDefaultPanelPath(currentUser),
         { replace: true },
       );
       return;
@@ -75,7 +76,7 @@ export default function VerifyPage() {
         navigate("/404", { replace: true });
         return;
       }
-      navigate("/dashboard", { replace: true });
+      navigate(getDefaultPanelPath(user), { replace: true });
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "کد تأیید نامعتبر است.");
     } finally {

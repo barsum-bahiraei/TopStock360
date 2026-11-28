@@ -26,6 +26,7 @@ export type DiscountValidationInput = {
 export type DiscountValidationOutput = {
   code: string;
   discountAmount: number;
+  discountPercentage: number | null;
   minimumPurchaseAmount: number;
   paymentMethod: PaymentMethod | null;
   expireAt: string | null;

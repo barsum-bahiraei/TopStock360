@@ -30,5 +30,4 @@ public class UserEntity : BaseEntity
     public ICollection<InvoiceEntity> Invoices { get; set; }
     public ICollection<ProductCommentEntity> ProductComments { get; set; }
     public ICollection<ProductBookmarkEntity> ProductBookmarks { get; set; }
-    public ICollection<UserDiscountCodeEntity> UserDiscountCodes { get; set; }
 }

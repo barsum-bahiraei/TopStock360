@@ -39,7 +39,6 @@ public class StoreDbContext : DbContext
     public DbSet<InvoiceItemEntity> InvoiceItems { get; set; }
     public DbSet<PaymentEntity> Payments { get; set; }
     public DbSet<DiscountCodeEntity> DiscountCodes { get; set; }
-    public DbSet<UserDiscountCodeEntity> UserDiscountCodes { get; set; }
     public DbSet<ProductBookmarkEntity> ProductBookmarks { get; set; }
     public DbSet<ProvinceEntity> Provinces { get; set; }
     public DbSet<CityEntity> Cities { get; set; }
@@ -47,6 +46,7 @@ public class StoreDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.HasPostgresExtension("pg_trgm");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(StoreDbContext).Assembly);
     }
 

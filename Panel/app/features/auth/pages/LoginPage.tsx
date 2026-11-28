@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { useAuth } from "~/contexts/auth-context";
 import { useTheme } from "~/contexts/theme-context";
 import {
-  canAccessPanel,
+  getDefaultPanelPath,
 } from "~/features/auth/utils/authorization";
 import loginImage from "~/assets/images/login.jpg";
 
@@ -17,7 +17,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!isReady || !isAuthenticated || !currentUser) return;
-    navigate(canAccessPanel(currentUser) ? "/dashboard" : "/404", {
+    navigate(getDefaultPanelPath(currentUser), {
       replace: true,
     });
   }, [isReady, isAuthenticated, currentUser, navigate]);

@@ -127,7 +127,10 @@ public class ProductRepository(StoreDbContext context) : IProductRepository
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(input.Name))
-            query = query.Where(x => x.Name.Contains(input.Name.Trim()));
+        {
+            var namePattern = $"%{EscapeLikePattern(input.Name.Trim())}%";
+            query = query.Where(x => EF.Functions.ILike(x.Name, namePattern, "\\"));
+        }
 
         if (input.CategoryId.HasValue)
         {
@@ -199,6 +202,11 @@ public class ProductRepository(StoreDbContext context) : IProductRepository
             .ToListAsync(cancellation);
         return (result, totalCount);
     }
+
+    private static string EscapeLikePattern(string value) => value
+        .Replace("\\", "\\\\")
+        .Replace("%", "\\%")
+        .Replace("_", "\\_");
 
     public async Task<(List<ProductEntity> Items, int? TotalCount, int CurrentPage, string? NextCursor)> TorobListAsync(
         ProductTorobInput input, CancellationToken cancellation)

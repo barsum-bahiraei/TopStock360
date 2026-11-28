@@ -1,4 +1,5 @@
 using Store.Domain.Accounts.Models.Input;
+using Store.Domain.Invoices;
 
 namespace Store.Domain.Accounts;
 

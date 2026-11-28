@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Store.Domain.Accounts;
 using Store.Domain.Invoices;
 using Store.Domain.Sellers.Models.Output;
 using Store.Persistent.Database.StoreDbContext;
@@ -84,14 +83,10 @@ public class InvoiceRepository(StoreDbContext context) : IInvoiceRepository
         await context.SaveChangesAsync(cancellation);
     }
 
-    public async Task<UserDiscountCodeEntity?> UserDiscountCodeGetAsync(int userId, string code,
-        CancellationToken cancellation)
-    {
-        return await context.UserDiscountCodes
+    public Task<DiscountCodeEntity?> DiscountCodeGetAsync(string code, CancellationToken cancellation) =>
+        context.DiscountCodes
             .AsNoTracking()
-            .Include(x => x.DiscountCode)
-            .FirstOrDefaultAsync(x => x.UserId == userId && x.DiscountCode.Code == code, cancellation);
-    }
+            .FirstOrDefaultAsync(x => x.Code == code, cancellation);
 
     public async Task<(InvoiceEntity Invoice, PaymentEntity Payment)> CheckoutCreateAsync(
         InvoiceEntity invoice, PaymentEntity payment, IReadOnlyCollection<CartEntity> carts,
@@ -104,7 +99,6 @@ public class InvoiceRepository(StoreDbContext context) : IInvoiceRepository
         context.Carts.RemoveRange(carts);
         await context.SaveChangesAsync(cancellation);
 
-        // TODO: Mark UserDiscountCode as used only after a future payment verification succeeds.
         await transaction.CommitAsync(cancellation);
         return (invoice, payment);
     }
@@ -138,18 +132,6 @@ public class InvoiceRepository(StoreDbContext context) : IInvoiceRepository
     public async Task CompletePaymentAsync(PaymentEntity payment, CancellationToken cancellation)
     {
         await using var transaction = await context.Database.BeginTransactionAsync(cancellation);
-        if (payment.Invoice.DiscountCodeId.HasValue)
-        {
-            var userDiscountCode = await context.UserDiscountCodes.FirstOrDefaultAsync(x =>
-                x.UserId == payment.Invoice.UserId &&
-                x.DiscountCodeId == payment.Invoice.DiscountCodeId.Value, cancellation);
-            if (userDiscountCode != null)
-            {
-                userDiscountCode.IsUsed = true;
-                userDiscountCode.UsedAt = DateTime.UtcNow;
-            }
-        }
-
         await context.SaveChangesAsync(cancellation);
         await transaction.CommitAsync(cancellation);
     }
@@ -160,6 +142,7 @@ public class InvoiceRepository(StoreDbContext context) : IInvoiceRepository
             .Include(x => x.User)
             .Include(x => x.InvoiceItems)
             .Include(x => x.Payments)
+            .Include(x => x.DiscountCode)
             .Where(x => x.UserId == userId)
             .ToListAsync(cancellation);
         return result;

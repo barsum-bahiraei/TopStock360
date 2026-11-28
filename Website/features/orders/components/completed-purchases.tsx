@@ -128,7 +128,8 @@ export function OrdersList() {
                 <span aria-label={`وضعیت سفارش: ${status?.label ?? "نامشخص"}`} className={`w-fit rounded-full px-3 py-1.5 text-xs font-black ring-1 ring-inset ring-current/10 ${status?.className ?? "bg-muted text-muted-foreground"}`}>{status?.label ?? "نامشخص"}</span>
               </header>
               <dl className="grid gap-x-6 px-5 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
-                <OrderDetail icon="payments" label="مبلغ کل" value={formatToman(invoice.totalPrice)} accent />
+                <OrderDetail icon="payments" label="مبلغ پرداختی" value={formatToman(invoice.totalPrice)} accent />
+                {invoice.discountAmount > 0 && <OrderDetail icon="sell" label={`تخفیف${invoice.discountCode ? ` (${invoice.discountCode})` : ""}`} value={`-${formatToman(invoice.discountAmount)}`} />}
                 <OrderDetail icon="inventory_2" label="تعداد کالا" value={invoice.totalCount.toLocaleString("fa-IR")} />
                 <OrderDetail icon="credit_card" label="روش پرداخت" value={paymentMethodLabels[invoice.paymentMethod] ?? "نامشخص"} />
                 <OrderDetail icon="local_shipping" label="روش تحویل" value={deliveryMethodLabels[invoice.deliveryMethod] ?? "نامشخص"} />

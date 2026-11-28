@@ -1,4 +1,3 @@
-using Store.Domain.Accounts;
 using Store.Domain.Sellers.Models.Output;
 
 namespace Store.Domain.Invoices;
@@ -10,8 +9,7 @@ public interface IInvoiceRepository
     Task<CartEntity?> CartAddAsync(CartEntity input, CancellationToken cancellation);
     Task<CartEntity> CartUpdateAsync(CartEntity input, CancellationToken cancellation);
     Task CartDeleteAsync(CartEntity input, CancellationToken cancellation);
-    Task<UserDiscountCodeEntity?> UserDiscountCodeGetAsync(int userId, string code,
-        CancellationToken cancellation);
+    Task<DiscountCodeEntity?> DiscountCodeGetAsync(string code, CancellationToken cancellation);
     Task<(InvoiceEntity Invoice, PaymentEntity Payment)> CheckoutCreateAsync(
         InvoiceEntity invoice, PaymentEntity payment, IReadOnlyCollection<CartEntity> carts,
         CancellationToken cancellation);

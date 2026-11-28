@@ -1,6 +1,6 @@
 import { Navigate } from "react-router";
 import { useAuth } from "~/contexts/auth-context";
-import { canAccessPanel } from "~/features/auth/utils/authorization";
+import { canAccessPanel, getDefaultPanelPath } from "~/features/auth/utils/authorization";
 
 export default function AuthRedirectPage() {
   const { isReady, isAuthenticated, currentUser } = useAuth();
@@ -18,5 +18,5 @@ export default function AuthRedirectPage() {
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (!canAccessPanel(currentUser)) return <Navigate to="/404" replace />;
 
-  return <Navigate to="/dashboard" replace />;
+  return <Navigate to={getDefaultPanelPath(currentUser)} replace />;
 }

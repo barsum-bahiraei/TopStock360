@@ -36,11 +36,16 @@ public class InvoiceService(
     {
         var entities = await invoiceRepository.ListAsync(userId, cancellation);
         var now = DateTime.UtcNow;
-        var result = entities.Select(x => new InvoiceListOutput
+        var result = entities.Select(x =>
+        {
+            var subtotal = x.InvoiceItems.Sum(item => item.ProductPrice * item.ProductCount);
+            var totalPrice = x.Payments.OrderBy(payment => payment.Id).FirstOrDefault()?.Amount ?? subtotal;
+            return new InvoiceListOutput
             {
                 Id = x.Id,
-                TotalPrice = x.Payments.OrderBy(payment => payment.Id).FirstOrDefault()?.Amount
-                             ?? x.InvoiceItems.Sum(item => item.ProductPrice * item.ProductCount),
+                TotalPrice = totalPrice,
+                DiscountAmount = x.DiscountCodeId.HasValue ? Math.Max(0, subtotal - totalPrice) : 0,
+                DiscountCode = x.DiscountCode?.Code,
                 TotalCount = x.InvoiceItems.Sum(item => item.ProductCount),
                 CreatedAt = x.CreatedAt,
                 ExpiresAt = x.ExpiresAt,
@@ -50,32 +55,31 @@ public class InvoiceService(
                 PaymentStatus = x.PaymentStatus,
                 CanRetryPayment = x.PaymentStatus is PaymentStatusEnum.Failed or PaymentStatusEnum.Cancelled &&
                                   x.ExpiresAt.HasValue && x.ExpiresAt.Value > now,
-            }).ToList();
+            };
+        }).ToList();
         return Result<List<InvoiceListOutput>>.Success(result);
     }
 
-    public async Task<Result<DiscountCodeValidateOutput>> DiscountCodeValidateAsync(int userId,
-        DiscountCodeValidateInput input,
+    public async Task<Result<DiscountCodeValidateOutput>> DiscountCodeValidateAsync(DiscountCodeValidateInput input,
         CancellationToken cancellation)
     {
         if (string.IsNullOrWhiteSpace(input.DiscountCode))
             return Result<DiscountCodeValidateOutput>.Failure("کد تخفیف نامعتبر است");
 
-        var userDiscountCode = await invoiceRepository.UserDiscountCodeGetAsync(
-            userId, input.DiscountCode.Trim(), cancellation);
-        if (userDiscountCode == null)
-            return Result<DiscountCodeValidateOutput>.Failure("این کد تخفیف برای کاربر فعلی معتبر نیست");
+        var discountCode = await invoiceRepository.DiscountCodeGetAsync(input.DiscountCode.Trim(), cancellation);
+        if (discountCode == null)
+            return Result<DiscountCodeValidateOutput>.Failure("کد تخفیف معتبر نیست");
 
-        var discountCode = userDiscountCode.DiscountCode;
-        if (!discountCode.IsActive || userDiscountCode.IsUsed ||
+        if (!discountCode.IsActive ||
             discountCode.ExpireAt.HasValue && discountCode.ExpireAt.Value < DateTime.UtcNow ||
-            discountCode.MaxDiscountAmount <= 0 || discountCode.MinimumPurchaseAmount < 0)
+            !HasValidDiscount(discountCode) || discountCode.MinimumPurchaseAmount < 0)
             return Result<DiscountCodeValidateOutput>.Failure("کد تخفیف معتبر نیست");
 
         return Result<DiscountCodeValidateOutput>.Success(new DiscountCodeValidateOutput
         {
             Code = discountCode.Code,
-            DiscountAmount = discountCode.MaxDiscountAmount,
+            DiscountAmount = discountCode.MaxDiscountAmount ?? 0,
+            DiscountPercentage = discountCode.DiscountPercentage,
             MinimumPurchaseAmount = discountCode.MinimumPurchaseAmount,
             PaymentMethod = discountCode.PaymentMethod,
             ExpireAt = discountCode.ExpireAt
@@ -512,21 +516,22 @@ public class InvoiceService(
             if (code.Length == 0)
                 return Result<CheckoutPricing>.Failure("کد تخفیف نامعتبر است");
 
-            var userDiscountCode = await invoiceRepository.UserDiscountCodeGetAsync(userId, code, cancellation);
-            if (userDiscountCode == null)
-                return Result<CheckoutPricing>.Failure("این کد تخفیف برای کاربر فعلی معتبر نیست");
+            var discountCode = await invoiceRepository.DiscountCodeGetAsync(code, cancellation);
+            if (discountCode == null)
+                return Result<CheckoutPricing>.Failure("کد تخفیف معتبر نیست");
 
-            var discountCode = userDiscountCode.DiscountCode;
             var now = DateTime.UtcNow;
-            if (!discountCode.IsActive || userDiscountCode.IsUsed ||
+            if (!discountCode.IsActive ||
                 discountCode.ExpireAt.HasValue && discountCode.ExpireAt.Value < now ||
                 discountCode.PaymentMethod.HasValue && discountCode.PaymentMethod.Value != paymentMethod ||
-                discountCode.MaxDiscountAmount <= 0 ||
+                !HasValidDiscount(discountCode) ||
                 discountCode.MinimumPurchaseAmount < 0 ||
                 subtotal < discountCode.MinimumPurchaseAmount)
                 return Result<CheckoutPricing>.Failure("کد تخفیف معتبر نیست");
 
-            discountAmount = discountCode.MaxDiscountAmount;
+            discountAmount = discountCode.MaxDiscountAmount ??
+                             decimal.Round(subtotal * discountCode.DiscountPercentage!.Value / 100m, 0,
+                                 MidpointRounding.AwayFromZero);
             discountCodeId = discountCode.Id;
         }
 
@@ -555,6 +560,14 @@ public class InvoiceService(
 
     private static decimal GetUnitPrice(ProductVariantEntity variant, ProductEntity product) =>
         Math.Max(0, variant.Price - product.Discount);
+
+    private static bool HasValidDiscount(DiscountCodeEntity discountCode)
+    {
+        var hasAmount = discountCode.MaxDiscountAmount.HasValue;
+        var hasPercentage = discountCode.DiscountPercentage.HasValue;
+        return hasAmount != hasPercentage &&
+               (discountCode.MaxDiscountAmount > 0 || discountCode.DiscountPercentage is > 0 and <= 100);
+    }
 
     private sealed record CheckoutPricing(
         List<CartEntity> Carts,

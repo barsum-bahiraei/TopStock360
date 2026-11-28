@@ -3,11 +3,11 @@ using System.Security.Cryptography;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Store.Domain.Accounts;
 using Store.Domain.Accounts.Models.Input;
 using Store.Domain.Accounts.Models.Output;
+using Store.Domain.Invoices;
 using Store.Domain.Locations;
 using Store.Service.ProviderService;
 
@@ -17,8 +17,7 @@ public class AccountService(
     IAccountRepository accountRepository,
     ILocationRepository locationRepository,
     IConfiguration configuration,
-    KavenegarSmsService smsService,
-    ILogger<AccountService> logger
+    KavenegarSmsService smsService
 )
 {
     private readonly RoleService roleService = new(accountRepository);
@@ -209,7 +208,7 @@ public class AccountService(
         if (created == null)
             return Result<UserOtpSendOutput>.Failure("لطفاً پیش از درخواست مجدد کد تأیید کمی صبر کنید");
 
-        // await smsService.SendVerificationCodeAsync(phoneNumber, code, cancellation);
+        await smsService.SendVerificationCodeAsync(phoneNumber, code, cancellation);
 
         return Result<UserOtpSendOutput>.Success(new UserOtpSendOutput
         {
@@ -282,12 +281,11 @@ public class AccountService(
             Id = x.Id,
             Code = x.Code,
             MaxDiscountAmount = x.MaxDiscountAmount,
+            DiscountPercentage = x.DiscountPercentage,
             MinimumPurchaseAmount = x.MinimumPurchaseAmount,
             PaymentMethod = x.PaymentMethod,
             ExpireAt = x.ExpireAt,
-            IsActive = x.IsActive,
-            AssignedUserCount = x.UserDiscountCodes.Count,
-            UsedUserCount = x.UserDiscountCodes.Count(userDiscountCode => userDiscountCode.IsUsed)
+            IsActive = x.IsActive
         }).ToList();
         return Result<List<DiscountCodeListOutput>>.Success(result);
     }
@@ -311,41 +309,18 @@ public class AccountService(
         if (await accountRepository.DiscountCodeExistsAsync(code, null, cancellation))
             return Result<DiscountCodeOutput>.Failure("این کد تخفیف از قبل وجود دارد");
 
-        var usersResult = await GetDiscountCodeUsersAsync(input.UserIds, cancellation);
-        if (usersResult.Error != null)
-            return Result<DiscountCodeOutput>.Failure(usersResult.Error);
-
         var entity = new DiscountCodeEntity
         {
             Code = code,
             MaxDiscountAmount = input.MaxDiscountAmount,
+            DiscountPercentage = input.DiscountPercentage,
             MinimumPurchaseAmount = input.MinimumPurchaseAmount,
             PaymentMethod = input.PaymentMethod,
             ExpireAt = input.ExpireAt,
-            IsActive = input.IsActive,
-            UserDiscountCodes = usersResult.Users.Select(user => new UserDiscountCodeEntity
-            {
-                UserId = user.Id,
-                User = user,
-                IsUsed = false
-            }).ToList()
+            IsActive = input.IsActive
         };
 
         var created = await accountRepository.DiscountCodeCreateAsync(entity, cancellation);
-        foreach (var user in usersResult.Users)
-        {
-            try
-            {
-                await smsService.SendAssignedDiscountAsync(user.PhoneNumber, created.Code,
-                    created.MaxDiscountAmount, created.MinimumPurchaseAmount, created.ExpireAt, cancellation);
-            }
-            catch (Exception exception) when (exception is not OperationCanceledException)
-            {
-                logger.LogError(exception,
-                    "Sending discount code {DiscountCodeId} to user {UserId} failed", created.Id, user.Id);
-            }
-        }
-
         return Result<DiscountCodeOutput>.Success(MapDiscountCode(created));
     }
 
@@ -364,28 +339,9 @@ public class AccountService(
         if (await accountRepository.DiscountCodeExistsAsync(code, id, cancellation))
             return Result<DiscountCodeOutput>.Failure("این کد تخفیف از قبل وجود دارد");
 
-        var usersResult = await GetDiscountCodeUsersAsync(input.UserIds, cancellation);
-        if (usersResult.Error != null)
-            return Result<DiscountCodeOutput>.Failure(usersResult.Error);
-
-        var userIds = usersResult.Users.Select(x => x.Id).ToHashSet();
-        foreach (var assignment in entity.UserDiscountCodes.Where(x => !userIds.Contains(x.UserId)).ToList())
-            entity.UserDiscountCodes.Remove(assignment);
-
-        var assignedUserIds = entity.UserDiscountCodes.Select(x => x.UserId).ToHashSet();
-        foreach (var user in usersResult.Users.Where(x => !assignedUserIds.Contains(x.Id)))
-        {
-            entity.UserDiscountCodes.Add(new UserDiscountCodeEntity
-            {
-                UserId = user.Id,
-                User = user,
-                DiscountCodeId = entity.Id,
-                IsUsed = false
-            });
-        }
-
         entity.Code = code;
         entity.MaxDiscountAmount = input.MaxDiscountAmount;
+        entity.DiscountPercentage = input.DiscountPercentage;
         entity.MinimumPurchaseAmount = input.MinimumPurchaseAmount;
         entity.PaymentMethod = input.PaymentMethod;
         entity.ExpireAt = input.ExpireAt;
@@ -453,33 +409,24 @@ public class AccountService(
         return (new JwtSecurityTokenHandler().WriteToken(token), expiresAt);
     }
 
-    private async Task<(List<UserEntity> Users, string? Error)> GetDiscountCodeUsersAsync(
-        List<int> requestedUserIds, CancellationToken cancellation)
-    {
-        var userIds = requestedUserIds.Distinct().ToList();
-        var users = await accountRepository.UserListAsync(userIds, cancellation);
-        if (users.Count != userIds.Count)
-            return ([], "یک یا چند کاربر یافت نشدند");
-
-        return (users, null);
-    }
-
     private static string? ValidateDiscountCode(DiscountCodeUpsertInput input)
     {
         if (string.IsNullOrWhiteSpace(input.Code))
             return "وارد کردن کد تخفیف الزامی است";
         if (input.Code.Trim().Length > 100)
             return "کد تخفیف نمی‌تواند بیش از ۱۰۰ نویسه باشد";
+        var hasAmount = input.MaxDiscountAmount.HasValue;
+        var hasPercentage = input.DiscountPercentage.HasValue;
+        if (hasAmount == hasPercentage)
+            return "فقط یکی از مبلغ تخفیف یا درصد تخفیف باید وارد شود";
         if (input.MaxDiscountAmount <= 0)
             return "مبلغ تخفیف باید بیشتر از صفر باشد";
+        if (input.DiscountPercentage is <= 0 or > 100)
+            return "درصد تخفیف باید بیشتر از صفر و حداکثر ۱۰۰ باشد";
         if (input.MinimumPurchaseAmount < 0)
             return "حداقل مبلغ خرید نمی‌تواند منفی باشد";
         if (input.PaymentMethod.HasValue && !Enum.IsDefined(input.PaymentMethod.Value))
             return "روش پرداخت نامعتبر است";
-        if (input.UserIds == null || input.UserIds.Count == 0)
-            return "باید حداقل یک کاربر انتخاب شود";
-        if (input.UserIds.Any(x => x <= 0))
-            return "شناسه کاربر نامعتبر است";
         return null;
     }
 
@@ -490,20 +437,11 @@ public class AccountService(
             Id = entity.Id,
             Code = entity.Code,
             MaxDiscountAmount = entity.MaxDiscountAmount,
+            DiscountPercentage = entity.DiscountPercentage,
             MinimumPurchaseAmount = entity.MinimumPurchaseAmount,
             PaymentMethod = entity.PaymentMethod,
             ExpireAt = entity.ExpireAt,
-            IsActive = entity.IsActive,
-            Users = entity.UserDiscountCodes.Select(x => new DiscountCodeUserOutput
-            {
-                Id = x.Id,
-                UserId = x.UserId,
-                FirstName = x.User.FirstName,
-                LastName = x.User.LastName,
-                PhoneNumber = x.User.PhoneNumber,
-                IsUsed = x.IsUsed,
-                UsedAt = x.UsedAt
-            }).ToList()
+            IsActive = entity.IsActive
         };
     }
 

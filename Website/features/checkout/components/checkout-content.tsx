@@ -108,7 +108,14 @@ export function CheckoutContent() {
   const meetsMinimumPurchase = !validatedDiscount || estimatedSubtotal >= validatedDiscount.minimumPurchaseAmount;
   const supportsPaymentMethod = !validatedDiscount || validatedDiscount.paymentMethod === null || validatedDiscount.paymentMethod === PaymentMethod.Online;
   const canApplyDiscount = isValidatedCode && meetsMinimumPurchase && supportsPaymentMethod;
-  const discountAmount = canApplyDiscount ? Math.min(validatedDiscount!.discountAmount, estimatedSubtotal) : 0;
+  const discountAmount = canApplyDiscount
+    ? Math.min(
+        validatedDiscount!.discountPercentage != null
+          ? Math.round(estimatedSubtotal * validatedDiscount!.discountPercentage / 100)
+          : validatedDiscount!.discountAmount,
+        estimatedSubtotal,
+      )
+    : 0;
   const finalAmount = Math.max(0, estimatedSubtotal - discountAmount);
   const needsAddress = deliveryMethod !== DeliveryMethod.Pickup;
   const deliveryProfile = hasCompleteDeliveryProfile(profile.data) ? profile.data : null;

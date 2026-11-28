@@ -12,6 +12,9 @@ public class ProductConfiguration : IEntityTypeConfiguration<ProductEntity>
         builder.Property(x => x.Name).IsRequired().HasMaxLength(500);
         builder.Property(x => x.ShortDescription).HasMaxLength(500);
         builder.Property(x => x.Discount).HasPrecision(18, 2);
+        builder.HasIndex(x => x.Name)
+            .HasMethod("gin")
+            .HasOperators("gin_trgm_ops");
         builder.Ignore(x => x.Invoices);
         builder.HasOne(x => x.Category)
             .WithMany(x => x.Products)

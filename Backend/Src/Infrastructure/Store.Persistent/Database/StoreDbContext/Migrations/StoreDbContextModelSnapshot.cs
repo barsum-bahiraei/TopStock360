@@ -20,51 +20,8 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                 .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "pg_trgm");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Store.Domain.Accounts.DiscountCodeEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("ExpireAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<decimal>("MaxDiscountAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<decimal>("MinimumPurchaseAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<int?>("PaymentMethod")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.ToTable("DiscountCodes", (string)null);
-                });
 
             modelBuilder.Entity("Store.Domain.Accounts.RoleAccessEntity", b =>
                 {
@@ -126,42 +83,6 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                         .IsUnique();
 
                     b.ToTable("Roles", (string)null);
-                });
-
-            modelBuilder.Entity("Store.Domain.Accounts.UserDiscountCodeEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("DiscountCodeId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsUsed")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("UsedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DiscountCodeId");
-
-                    b.HasIndex("UserId", "DiscountCodeId")
-                        .IsUnique();
-
-                    b.ToTable("UserDiscountCodes", (string)null);
                 });
 
             modelBuilder.Entity("Store.Domain.Accounts.UserEntity", b =>
@@ -495,6 +416,54 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                         .IsUnique();
 
                     b.ToTable("Carts", (string)null);
+                });
+
+            modelBuilder.Entity("Store.Domain.Invoices.DiscountCodeEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("DiscountPercentage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<DateTime?>("ExpireAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal?>("MaxDiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<decimal>("MinimumPurchaseAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int?>("PaymentMethod")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("DiscountCodes", (string)null);
                 });
 
             modelBuilder.Entity("Store.Domain.Invoices.InvoiceEntity", b =>
@@ -874,6 +843,11 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
 
                     b.HasIndex("CategoryId");
 
+                    b.HasIndex("Name");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
+
                     b.HasIndex("ProductBrandId");
 
                     b.HasIndex("SellerId");
@@ -1023,25 +997,6 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("Store.Domain.Accounts.UserDiscountCodeEntity", b =>
-                {
-                    b.HasOne("Store.Domain.Accounts.DiscountCodeEntity", "DiscountCode")
-                        .WithMany("UserDiscountCodes")
-                        .HasForeignKey("DiscountCodeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Store.Domain.Accounts.UserEntity", "User")
-                        .WithMany("UserDiscountCodes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DiscountCode");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Store.Domain.Accounts.UserEntity", b =>
                 {
                     b.HasOne("Store.Domain.Locations.CityEntity", "City")
@@ -1136,7 +1091,7 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
 
             modelBuilder.Entity("Store.Domain.Invoices.InvoiceEntity", b =>
                 {
-                    b.HasOne("Store.Domain.Accounts.DiscountCodeEntity", "DiscountCode")
+                    b.HasOne("Store.Domain.Invoices.DiscountCodeEntity", "DiscountCode")
                         .WithMany()
                         .HasForeignKey("DiscountCodeId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -1317,11 +1272,6 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Store.Domain.Accounts.DiscountCodeEntity", b =>
-                {
-                    b.Navigation("UserDiscountCodes");
-                });
-
             modelBuilder.Entity("Store.Domain.Accounts.RoleEntity", b =>
                 {
                     b.Navigation("RoleAccess");
@@ -1340,8 +1290,6 @@ namespace Store.Persistent.Database.StoreDbContext.Migrations
                     b.Navigation("ProductComments");
 
                     b.Navigation("Sellers");
-
-                    b.Navigation("UserDiscountCodes");
 
                     b.Navigation("UserRoles");
                 });

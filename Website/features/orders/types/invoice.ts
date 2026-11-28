@@ -25,6 +25,8 @@ export enum PaymentStatus {
 export type InvoiceListItem = {
   id: number;
   totalPrice: number;
+  discountAmount: number;
+  discountCode: string | null;
   totalCount: number;
   createdAt: string;
   expiresAt: string | null;

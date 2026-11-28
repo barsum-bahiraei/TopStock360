@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Store.Domain.Accounts;
 using Store.Domain.Accounts.Models.Input;
+using Store.Domain.Invoices;
 using Store.Persistent.Database.StoreDbContext;
 
 namespace Store.Persistent.Implementation;
@@ -257,7 +258,6 @@ public class AccountRepository(StoreDbContext context) : IAccountRepository
         CancellationToken cancellation = default)
     {
         return await context.DiscountCodes
-            .Include(x => x.UserDiscountCodes)
             .OrderByDescending(x => x.Id)
             .ToListAsync(cancellation);
     }
@@ -266,8 +266,6 @@ public class AccountRepository(StoreDbContext context) : IAccountRepository
         CancellationToken cancellation = default)
     {
         return await context.DiscountCodes
-            .Include(x => x.UserDiscountCodes)
-            .ThenInclude(x => x.User)
             .FirstOrDefaultAsync(x => x.Id == id, cancellation);
     }
 

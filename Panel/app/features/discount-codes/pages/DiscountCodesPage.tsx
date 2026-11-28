@@ -1,16 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { ConfirmDialog } from "~/components/common/ConfirmDialog";
 import { PersianDateTimePicker } from "~/components/common/PersianDateTimePicker";
-import { accessApi } from "~/features/access/api/access-api";
-import type { UserSummary } from "~/features/access/models/access";
 import { localDateTimeToUtcIso, utcDateTimeToLocalInput } from "~/shared/utils/date-time";
 import { discountCodeApi } from "../api/discount-code-api";
-import type {
-  DiscountCodeListOutput,
-  DiscountCodeUpsertInput,
-  DiscountCodeUserOutput,
-  PaymentMethod,
-} from "../models/discount-code";
+import type { DiscountCodeListOutput, DiscountCodeUpsertInput, PaymentMethod } from "../models/discount-code";
 
 const inputClasses =
   "min-h-11 w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-colors focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 dark:border-gray-700 dark:bg-gray-950 dark:text-white dark:placeholder-gray-500";
@@ -35,6 +28,7 @@ function errorMessage(error: unknown) {
 interface FormState {
   code: string;
   maxDiscountAmount: string;
+  discountPercentage: string;
   minimumPurchaseAmount: string;
   paymentMethod: string;
   expireAt: string;
@@ -44,6 +38,7 @@ interface FormState {
 const emptyForm: FormState = {
   code: "",
   maxDiscountAmount: "",
+  discountPercentage: "",
   minimumPurchaseAmount: "",
   paymentMethod: "",
   expireAt: "",
@@ -57,57 +52,16 @@ function generateRandomCode(): string {
   return code;
 }
 
-const wizardSteps = [
-  { title: "جزئیات", icon: "tune" },
-  { title: "کاربران", icon: "group" },
-];
-
 export default function DiscountCodesPage() {
   const [codes, setCodes] = useState<DiscountCodeListOutput[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [wizardOpen, setWizardOpen] = useState(false);
-  const [wizardStep, setWizardStep] = useState(0);
+  const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-
-  const [allUsers, setAllUsers] = useState<UserSummary[]>([]);
-  const [selectedUserIds, setSelectedUserIds] = useState<Set<number>>(new Set());
-  const [selectedUsers, setSelectedUsers] = useState<DiscountCodeUserOutput[]>([]);
-  const [knownUsers, setKnownUsers] = useState<Record<number, UserSummary>>({});
-  const [showSelectedOnly, setShowSelectedOnly] = useState(false);
-  const [usersLoading, setUsersLoading] = useState(false);
-
-  const rememberUsers = (users: UserSummary[]) => {
-    setKnownUsers((prev) => {
-      const next = { ...prev };
-      for (const user of users) next[user.id] = user;
-      return next;
-    });
-  };
-
-  const mergeWithSelected = (fetched: UserSummary[], selectedIds: Set<number>, known: Record<number, UserSummary>): UserSummary[] => {
-    const seen = new Set(fetched.map((u) => u.id));
-    const missing: UserSummary[] = [];
-    for (const id of selectedIds) {
-      if (!seen.has(id) && known[id]) {
-        missing.push(known[id]);
-        seen.add(id);
-      }
-    }
-    const selectedFirst = [...missing, ...fetched.filter((u) => selectedIds.has(u.id))];
-    const rest = fetched.filter((u) => !selectedIds.has(u.id));
-    return [...selectedFirst, ...rest];
-  };
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [filterFirstName, setFilterFirstName] = useState("");
-  const [filterLastName, setFilterLastName] = useState("");
-  const [filterEmail, setFilterEmail] = useState("");
-  const [filterPhoneNumber, setFilterPhoneNumber] = useState("");
-
   const [confirmData, setConfirmData] = useState<{
     title: string;
     message: string;
@@ -131,221 +85,118 @@ export default function DiscountCodesPage() {
   }, []);
 
   const setFormField = <K extends keyof FormState>(key: K, value: FormState[K]) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    setForm((previous) => ({ ...previous, [key]: value }));
   };
 
-  const openWizard = (item?: DiscountCodeListOutput) => {
-    if (item) {
-      setEditingId(item.id);
-      void loadDetail(item.id);
-    } else {
-      setEditingId(null);
-      setForm(emptyForm);
+  const setDiscountAmount = (value: string) => {
+    if (value !== "" && form.discountPercentage !== "") {
+      setFormError("امکان وارد کردن مبلغ و درصد تخفیف به‌صورت هم‌زمان وجود ندارد. یکی را خالی کنید.");
+      return;
     }
     setFormError(null);
-    setWizardStep(0);
-    setSelectedUserIds(new Set());
-    setSelectedUsers([]);
-    setShowSelectedOnly(false);
-    setAllUsers([]);
-    setFilterOpen(false);
-    setFilterFirstName("");
-    setFilterLastName("");
-    setFilterEmail("");
-    setFilterPhoneNumber("");
-    setWizardOpen(true);
+    setFormField("maxDiscountAmount", value);
   };
 
-  const loadDetail = async (id: number) => {
-    try {
-      const detail = await discountCodeApi.get(id);
-      const expireAtLocal = utcDateTimeToLocalInput(detail.expireAt);
-      setForm({
-        code: detail.code,
-        maxDiscountAmount: String(detail.maxDiscountAmount),
-        minimumPurchaseAmount: String(detail.minimumPurchaseAmount),
-        paymentMethod: detail.paymentMethod != null ? String(detail.paymentMethod) : "",
-        expireAt: expireAtLocal,
-        isActive: detail.isActive,
-      });
-      if (detail.expireAt && !expireAtLocal) {
-        setFormError("تاریخ انقضای دریافت‌شده از سرور معتبر نیست.");
-      }
-      setSelectedUserIds(new Set(detail.users.map((u) => u.userId)));
-      setSelectedUsers(detail.users);
-      setKnownUsers((prev) => {
-        const next = { ...prev };
-        for (const u of detail.users) {
-          next[u.userId] = {
-            id: u.userId,
-            firstName: u.firstName,
-            lastName: u.lastName,
-            email: null,
-            phoneNumber: u.phoneNumber,
-            nationalCode: null,
-            birthDate: null,
-            gender: 2,
-            address: null,
-            latitude: null,
-            longitude: null,
-            isEmailVerified: false,
-            isPhoneNumberVerified: false,
-            roles: [],
-          };
-        }
-        return next;
-      });
-    } catch (caughtError) {
-      setFormError(errorMessage(caughtError));
+  const setDiscountPercentage = (value: string) => {
+    if (value !== "" && form.maxDiscountAmount !== "") {
+      setFormError("امکان وارد کردن مبلغ و درصد تخفیف به‌صورت هم‌زمان وجود ندارد. یکی را خالی کنید.");
+      return;
     }
+    if (value !== "" && Number(value) > 100) {
+      setFormError("درصد تخفیف نمی‌تواند بیشتر از ۱۰۰ باشد.");
+      return;
+    }
+    setFormError(null);
+    setFormField("discountPercentage", value);
   };
 
-  const closeWizard = () => {
-    if (saving) return;
-    setWizardOpen(false);
+  const resetModal = () => {
+    setModalOpen(false);
     setEditingId(null);
     setForm(emptyForm);
     setFormError(null);
-    setSelectedUserIds(new Set());
-    setSelectedUsers([]);
-    setShowSelectedOnly(false);
-    setAllUsers([]);
+    setDetailLoading(false);
   };
 
-  const goToStep2 = async () => {
-    const amount = Number(form.maxDiscountAmount);
-    const minimumPurchase = Number(form.minimumPurchaseAmount);
-    if (!form.code.trim()) {
-      setFormError("کد تخفیف را وارد کنید.");
-      return;
-    }
-    if (!Number.isFinite(amount) || amount <= 0) {
-      setFormError("مبلغ تخفیف باید بیشتر از صفر باشد.");
-      return;
-    }
-    if (!Number.isFinite(minimumPurchase) || minimumPurchase < 0) {
-      setFormError("حداقل مبلغ خرید نمی‌تواند منفی باشد.");
-      return;
-    }
-    if (form.expireAt && !localDateTimeToUtcIso(form.expireAt)) {
-      setFormError("تاریخ انقضا معتبر نیست.");
-      return;
-    }
+  const closeModal = () => {
+    if (!saving) resetModal();
+  };
+
+  const openModal = (item?: DiscountCodeListOutput) => {
     setFormError(null);
-    setWizardStep(1);
-    if (allUsers.length === 0) {
-      setUsersLoading(true);
-      try {
-        const fetched = (await accessApi.listUsers({ pageSize: 100 })).items;
-        rememberUsers(fetched);
-        setAllUsers(fetched);
-      } catch (caughtError) {
-        setFormError(errorMessage(caughtError));
-      } finally {
-        setUsersLoading(false);
-      }
+    setModalOpen(true);
+    if (!item) {
+      setEditingId(null);
+      setForm(emptyForm);
+      return;
     }
-  };
 
-  const buildUserParams = () => {
-    const params: Record<string, string> = {};
-    if (filterFirstName.trim()) params.firstName = filterFirstName.trim();
-    if (filterLastName.trim()) params.lastName = filterLastName.trim();
-    if (filterEmail.trim()) params.email = filterEmail.trim();
-    if (filterPhoneNumber.trim()) params.phoneNumber = filterPhoneNumber.trim();
-    return params;
-  };
-
-  const hasActiveUserFilters = filterFirstName || filterLastName || filterEmail || filterPhoneNumber;
-
-  const applyUserFilters = async () => {
-    setUsersLoading(true);
-    try {
-      const fetched = (await accessApi.listUsers({ ...buildUserParams(), pageSize: 100 })).items;
-      rememberUsers(fetched);
-      setAllUsers(fetched);
-    } catch (caughtError) {
-      setFormError(errorMessage(caughtError));
-    } finally {
-      setUsersLoading(false);
-    }
-  };
-
-  const clearUserFilters = () => {
-    setFilterFirstName("");
-    setFilterLastName("");
-    setFilterEmail("");
-    setFilterPhoneNumber("");
-    setUsersLoading(true);
-    void accessApi.listUsers({ pageSize: 100 })
-      .then((result) => {
-        rememberUsers(result.items);
-        setAllUsers(result.items);
+    setEditingId(item.id);
+    setDetailLoading(true);
+    void discountCodeApi.get(item.id)
+      .then((detail) => {
+        const expireAtLocal = utcDateTimeToLocalInput(detail.expireAt);
+        setForm({
+          code: detail.code,
+          maxDiscountAmount: detail.maxDiscountAmount != null ? String(detail.maxDiscountAmount) : "",
+          discountPercentage: detail.discountPercentage != null ? String(detail.discountPercentage) : "",
+          minimumPurchaseAmount: String(detail.minimumPurchaseAmount),
+          paymentMethod: detail.paymentMethod != null ? String(detail.paymentMethod) : "",
+          expireAt: expireAtLocal,
+          isActive: detail.isActive,
+        });
+        if (detail.expireAt && !expireAtLocal) {
+          setFormError("تاریخ انقضای دریافت‌شده از سرور معتبر نیست.");
+        }
       })
       .catch((caughtError: unknown) => setFormError(errorMessage(caughtError)))
-      .finally(() => setUsersLoading(false));
+      .finally(() => setDetailLoading(false));
   };
 
-  const toggleUser = (userId: number) => {
-    const user = allUsers.find((u) => u.id === userId);
-    if (user) rememberUsers([user]);
-    setSelectedUserIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(userId)) next.delete(userId);
-      else next.add(userId);
-      return next;
-    });
-  };
+  const validateForm = () => {
+    const amount = Number(form.maxDiscountAmount);
+    const percentage = Number(form.discountPercentage);
+    const minimumPurchase = Number(form.minimumPurchaseAmount);
+    if (!form.code.trim()) return "کد تخفیف را وارد کنید.";
 
-  const orderedUsers = useMemo(
-    () => mergeWithSelected(allUsers, selectedUserIds, knownUsers),
-    [allUsers, selectedUserIds, knownUsers],
-  );
-
-  const visibleUsers = showSelectedOnly
-    ? orderedUsers.filter((u) => selectedUserIds.has(u.id))
-    : orderedUsers;
-
-  const toggleAllUsers = () => {
-    const allVisibleSelected = allUsers.length > 0 && allUsers.every((u) => selectedUserIds.has(u.id));
-    if (allVisibleSelected) {
-      setSelectedUserIds((prev) => {
-        const next = new Set(prev);
-        for (const u of allUsers) next.delete(u.id);
-        return next;
-      });
-    } else {
-      rememberUsers(allUsers);
-      setSelectedUserIds((prev) => new Set([...prev, ...allUsers.map((u) => u.id)]));
+    const hasAmount = form.maxDiscountAmount !== "";
+    const hasPercentage = form.discountPercentage !== "";
+    if (hasAmount === hasPercentage) return "فقط یکی از مبلغ تخفیف یا درصد تخفیف را وارد کنید.";
+    if (hasAmount && (!Number.isFinite(amount) || amount <= 0)) return "مبلغ تخفیف باید بیشتر از صفر باشد.";
+    if (hasPercentage && (!Number.isFinite(percentage) || percentage <= 0 || percentage > 100)) {
+      return "درصد تخفیف باید بیشتر از صفر و حداکثر ۱۰۰ باشد.";
     }
+    if (!Number.isFinite(minimumPurchase) || minimumPurchase < 0) {
+      return "حداقل مبلغ خرید نمی‌تواند منفی باشد.";
+    }
+    if (form.expireAt && !localDateTimeToUtcIso(form.expireAt)) return "تاریخ انقضا معتبر نیست.";
+    return null;
   };
 
-  const handleFinalSubmit = async () => {
-    const expireAtUtc = localDateTimeToUtcIso(form.expireAt);
-    if (form.expireAt && !expireAtUtc) {
-      setFormError("تاریخ انقضا معتبر نیست.");
-      setWizardStep(0);
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const validationError = validateForm();
+    if (validationError) {
+      setFormError(validationError);
       return;
     }
 
     const payload: DiscountCodeUpsertInput = {
       code: form.code.trim(),
-      maxDiscountAmount: Number(form.maxDiscountAmount),
+      maxDiscountAmount: form.maxDiscountAmount !== "" ? Number(form.maxDiscountAmount) : null,
+      discountPercentage: form.discountPercentage !== "" ? Number(form.discountPercentage) : null,
       minimumPurchaseAmount: Number(form.minimumPurchaseAmount),
       paymentMethod: form.paymentMethod !== "" ? (Number(form.paymentMethod) as PaymentMethod) : null,
-      expireAt: expireAtUtc,
+      expireAt: localDateTimeToUtcIso(form.expireAt),
       isActive: form.isActive,
-      userIds: Array.from(selectedUserIds),
     };
+
     setSaving(true);
     setFormError(null);
     try {
-      if (editingId) {
-        await discountCodeApi.update(editingId, payload);
-      } else {
-        await discountCodeApi.create(payload);
-      }
-      closeWizard();
+      if (editingId) await discountCodeApi.update(editingId, payload);
+      else await discountCodeApi.create(payload);
+      resetModal();
       await load();
     } catch (caughtError) {
       setFormError(errorMessage(caughtError));
@@ -363,16 +214,14 @@ export default function DiscountCodesPage() {
     }
   };
 
-  const allSelected = allUsers.length > 0 && allUsers.every((u) => selectedUserIds.has(u.id));
-
   return (
     <div className="mx-auto max-w-6xl space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">کدهای تخفیف</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">ایجاد و مدیریت کدهای تخفیف و اختصاص آن‌ها به کاربران.</p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">ایجاد و مدیریت کدهای تخفیف عمومی.</p>
         </div>
-        <button onClick={() => openWizard()} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-700">
+        <button onClick={() => openModal()} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-700">
           <span className="material-symbols-outlined text-xl">add</span>
           کد تخفیف جدید
         </button>
@@ -391,31 +240,27 @@ export default function DiscountCodesPage() {
         <div className="rounded-xl border border-dashed border-gray-300 bg-white py-16 text-center dark:border-gray-700 dark:bg-gray-900">
           <span className="material-symbols-outlined text-5xl text-gray-300 dark:text-gray-600">local_offer</span>
           <p className="mt-3 text-sm text-gray-500">هنوز کد تخفیفی وجود ندارد.</p>
-          <button onClick={() => openWizard()} className="mt-5 min-h-11 rounded-xl bg-primary-600 px-5 text-sm font-semibold text-white hover:bg-primary-700">ایجاد کد تخفیف</button>
+          <button onClick={() => openModal()} className="mt-5 min-h-11 rounded-xl bg-primary-600 px-5 text-sm font-semibold text-white hover:bg-primary-700">ایجاد کد تخفیف</button>
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-          <div className="hidden border-b border-gray-200 bg-gray-50 px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-400 lg:grid lg:grid-cols-[1fr_140px_100px_100px_120px_100px] lg:gap-4">
+          <div className="hidden border-b border-gray-200 bg-gray-50 px-6 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-400 lg:grid lg:grid-cols-[1fr_160px_120px_100px] lg:gap-4">
             <span>کد</span>
-            <span className="text-center">مبلغ تخفیف</span>
-            <span className="text-center">تعداد کاربران</span>
-            <span className="text-center">استفاده</span>
+            <span className="text-center">مقدار تخفیف</span>
             <span className="text-center">وضعیت</span>
             <span className="text-center">عملیات</span>
           </div>
           <ul className="divide-y divide-gray-200 dark:divide-gray-800">
             {codes.map((item) => (
-              <li key={item.id} className="flex flex-col gap-3 p-4 lg:grid lg:grid-cols-[1fr_140px_100px_100px_120px_100px] lg:items-center lg:gap-4 lg:px-6">
+              <li key={item.id} className="flex flex-col gap-3 p-4 lg:grid lg:grid-cols-[1fr_160px_120px_100px] lg:items-center lg:gap-4 lg:px-6">
                 <div className="min-w-0">
                   <p className="truncate font-medium text-gray-900 dark:text-white">{item.code}</p>
                   <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                    {paymentMethodLabels[item.paymentMethod ?? -1] ?? "—"}
+                    {paymentMethodLabels[item.paymentMethod ?? -1] ?? "همه روش‌ها"}
                     {` · حداقل خرید ${item.minimumPurchaseAmount.toLocaleString("fa-IR")} تومان`}
                   </p>
                 </div>
-                <p className="flex justify-between text-sm font-semibold text-primary-600 dark:text-primary-400 lg:block lg:text-center"><span className="font-normal text-gray-400 lg:hidden">مبلغ تخفیف</span><span>{item.maxDiscountAmount.toLocaleString("fa-IR")} تومان</span></p>
-                <p className="flex justify-between text-sm text-gray-600 dark:text-gray-300 lg:block lg:text-center"><span className="text-gray-400 lg:hidden">تعداد کاربران</span><span>{item.assignedUserCount}</span></p>
-                <p className="flex justify-between text-sm text-gray-600 dark:text-gray-300 lg:block lg:text-center"><span className="text-gray-400 lg:hidden">تعداد استفاده</span><span>{item.usedUserCount}</span></p>
+                <p className="flex justify-between text-sm font-semibold text-primary-600 dark:text-primary-400 lg:block lg:text-center"><span className="font-normal text-gray-400 lg:hidden">مقدار تخفیف</span><span>{item.discountPercentage != null ? `${item.discountPercentage.toLocaleString("fa-IR")} درصد` : `${item.maxDiscountAmount!.toLocaleString("fa-IR")} تومان`}</span></p>
                 <div className="flex items-center justify-between lg:justify-center">
                   <span className="text-sm text-gray-400 lg:hidden">وضعیت</span>
                   <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${item.isActive ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400"}`}>
@@ -424,12 +269,8 @@ export default function DiscountCodesPage() {
                   </span>
                 </div>
                 <div className="flex items-center justify-center gap-1">
-                  <button onClick={() => openWizard(item)} className="flex size-10 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-950/40 dark:hover:text-primary-400" title="ویرایش">
-                    <span className="material-symbols-outlined text-xl">edit</span>
-                  </button>
-                  <button onClick={() => setConfirmData({ title: "حذف کد تخفیف", message: `آیا از حذف کد \u00ab${item.code}\u00bb اطمینان دارید؟`, onConfirm: async () => { setConfirmData(null); await handleDelete(item.id); } })} className="flex size-10 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30" title="حذف">
-                    <span className="material-symbols-outlined text-xl">delete</span>
-                  </button>
+                  <button onClick={() => openModal(item)} className="flex size-10 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-primary-50 hover:text-primary-600 dark:hover:bg-primary-950/40 dark:hover:text-primary-400" title="ویرایش"><span className="material-symbols-outlined text-xl">edit</span></button>
+                  <button onClick={() => setConfirmData({ title: "حذف کد تخفیف", message: `آیا از حذف کد «${item.code}» اطمینان دارید؟`, onConfirm: async () => { setConfirmData(null); await handleDelete(item.id); } })} className="flex size-10 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30" title="حذف"><span className="material-symbols-outlined text-xl">delete</span></button>
                 </div>
               </li>
             ))}
@@ -437,207 +278,51 @@ export default function DiscountCodesPage() {
         </div>
       )}
 
-      {wizardOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-gray-950/60 p-0 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" onMouseDown={closeWizard}>
-          <div onMouseDown={(e) => e.stopPropagation()} className="flex h-dvh max-h-dvh w-full max-w-3xl flex-col overflow-hidden border border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900 sm:h-auto sm:max-h-[90dvh] sm:rounded-3xl">
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-gray-950/60 p-0 backdrop-blur-sm sm:items-center sm:p-6" role="dialog" aria-modal="true" onMouseDown={closeModal}>
+          <div onMouseDown={(event) => event.stopPropagation()} className="flex h-dvh max-h-dvh w-full max-w-3xl flex-col overflow-hidden border border-gray-200 bg-white shadow-2xl dark:border-gray-800 dark:bg-gray-900 sm:h-auto sm:max-h-[90dvh] sm:rounded-3xl">
             <header className="flex items-start justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-800 sm:px-7 sm:py-5">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400">{editingId ? "ویرایش کد تخفیف" : "کد تخفیف جدید"}</p>
                 <h2 className="mt-1 text-xl font-semibold text-gray-950 dark:text-white">{editingId ? `ویرایش ${form.code || "کد تخفیف"}` : "ایجاد کد تخفیف"}</h2>
               </div>
-              <button type="button" onClick={closeWizard} className="flex size-11 items-center justify-center rounded-xl text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-white" aria-label="بستن">
-                <span className="material-symbols-outlined">close</span>
-              </button>
+              <button type="button" onClick={closeModal} className="flex size-11 items-center justify-center rounded-xl text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-800 dark:hover:text-white" aria-label="بستن"><span className="material-symbols-outlined">close</span></button>
             </header>
 
-            <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-800 sm:px-7">
-              <ol className="grid grid-cols-2 gap-2" aria-label="پیشرفت">
-                {wizardSteps.map((item, index) => (
-                  <li key={item.title} className="flex min-w-0 items-center gap-2">
-                    <span className={`flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors ${index <= wizardStep ? "bg-primary-600 text-white" : "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-500"}`} aria-current={index === wizardStep ? "step" : undefined}>
-                      <span className="material-symbols-outlined text-[19px]">{index < wizardStep ? "check" : item.icon}</span>
-                    </span>
-                    <span className={`hidden truncate text-sm font-medium sm:block ${index <= wizardStep ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-gray-500"}`}>{item.title}</span>
-                    {index < wizardSteps.length - 1 && <span className={`h-px flex-1 ${index < wizardStep ? "bg-primary-500" : "bg-gray-200 dark:bg-gray-700"}`} />}
-                  </li>
-                ))}
-              </ol>
-            </div>
-
-            <div className="overflow-y-auto px-5 py-6 sm:px-7 sm:py-7">
-              {formError && (
-                <div className="mb-5 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300" role="alert">
-                  <span className="material-symbols-outlined text-[20px]">error</span><span>{formError}</span>
-                </div>
-              )}
-
-              {wizardStep === 0 && (
-                <form id="discount-form" onSubmit={(e) => { e.preventDefault(); void goToStep2(); }}>
-                  <h3 className="text-lg font-semibold text-gray-950 dark:text-white">جزئیات کد تخفیف</h3>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">اطلاعات کد تخفیف را وارد کنید.</p>
-                  <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                    <label className="sm:col-span-2">
-                      <span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">کد تخفیف <span className="text-red-500">*</span></span>
-                      <div className="flex gap-2">
-                        <input value={form.code} onChange={(e) => setFormField("code", e.target.value)} placeholder="مثال: SUMMER20" dir="ltr" className={inputClasses} required />
-                        <button type="button" onClick={() => setFormField("code", generateRandomCode())} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-gray-300 bg-gray-50 px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700" title="تولید کد تصادفی">
-                          <span className="material-symbols-outlined text-xl">casino</span>
-                        </button>
-                      </div>
-                    </label>
-                    <label>
-                      <span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">مبلغ تخفیف (تومان) <span className="text-red-500">*</span></span>
-                      <input type="number" min={1} value={form.maxDiscountAmount} onChange={(e) => setFormField("maxDiscountAmount", e.target.value)} placeholder="مثال: ۲۰۰۰۰۰" className={inputClasses} required />
-                    </label>
-                    <label>
-                      <span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">حداقل مبلغ خرید (تومان) <span className="text-red-500">*</span></span>
-                      <input type="number" min={0} value={form.minimumPurchaseAmount} onChange={(e) => setFormField("minimumPurchaseAmount", e.target.value)} placeholder="مثال: ۱۰۰۰۰۰۰" className={inputClasses} required />
-                    </label>
-                    <label>
-                      <span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">روش پرداخت</span>
-                      <select value={form.paymentMethod} onChange={(e) => setFormField("paymentMethod", e.target.value)} className={inputClasses}>
-                        {paymentMethods.map((pm) => (
-                          <option key={pm.value} value={pm.value}>{pm.label}</option>
-                        ))}
-                      </select>
-                    </label>
-                    <label>
-                      <span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">تاریخ انقضا</span>
-                      <PersianDateTimePicker mode="datetime" value={form.expireAt} onChange={(value) => setFormField("expireAt", value)} className={inputClasses} ariaLabel="تاریخ انقضا" />
-                    </label>
-                    <label className="sm:col-span-2 flex items-center gap-3 cursor-pointer">
-                      <input type="checkbox" checked={form.isActive} onChange={(e) => setFormField("isActive", e.target.checked)} className="size-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">فعال</span>
-                    </label>
-                  </div>
-                </form>
-              )}
-
-              {wizardStep === 1 && (
-                <section>
-                  <h3 className="text-lg font-semibold text-gray-950 dark:text-white">انتخاب کاربران</h3>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">کاربرانی که می‌توانند از این کد تخفیف استفاده کنند را انتخاب کنید.</p>
-
-                  {selectedUserIds.size > 0 && (
-                    <div className="mt-4 rounded-xl border border-primary-200 bg-primary-50/60 p-3 dark:border-primary-900 dark:bg-primary-950/20">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-semibold text-primary-800 dark:text-primary-300">
-                          کاربران انتخاب‌شده ({selectedUserIds.size})
-                        </p>
-                        <label className="flex cursor-pointer items-center gap-1.5 text-xs text-primary-700 dark:text-primary-300">
-                          <input type="checkbox" checked={showSelectedOnly} onChange={(e) => setShowSelectedOnly(e.target.checked)} className="size-3.5 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                          فقط انتخاب‌شده‌ها
-                        </label>
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {orderedUsers.filter((u) => selectedUserIds.has(u.id)).map((u) => (
-                          <span key={u.id} className="inline-flex items-center gap-1 rounded-full bg-primary-600 py-1 pl-2 pr-1 text-xs font-medium text-white">
-                            {u.firstName} {u.lastName}
-                            <button type="button" onClick={() => toggleUser(u.id)} className="flex size-5 items-center justify-center rounded-full hover:bg-primary-700" aria-label={`حذف ${u.firstName} ${u.lastName}`}>
-                              <span className="material-symbols-outlined text-sm">close</span>
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="mt-4 flex items-center gap-2">
-                    <button onClick={() => setFilterOpen((prev) => !prev)} className={`flex min-h-10 items-center justify-center gap-2 rounded-lg border px-3 text-sm font-medium transition-colors ${filterOpen || hasActiveUserFilters ? "border-primary-300 bg-primary-50 text-primary-700 dark:border-primary-800 dark:bg-primary-950/40 dark:text-primary-300" : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-200 dark:hover:bg-gray-800"}`}>
-                      <span className="material-symbols-outlined text-xl">filter_list</span>
-                      فیلتر
-                      {hasActiveUserFilters && <span className="size-2 rounded-full bg-primary-500" />}
-                    </button>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">{allUsers.length} کاربر</span>
-                  </div>
-
-                  {filterOpen && (
-                    <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-800/50">
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <input value={filterFirstName} onChange={(e) => setFilterFirstName(e.target.value)} placeholder="نام" className={inputClasses} />
-                        <input value={filterLastName} onChange={(e) => setFilterLastName(e.target.value)} placeholder="نام خانوادگی" className={inputClasses} />
-                        <input value={filterEmail} onChange={(e) => setFilterEmail(e.target.value)} placeholder="ایمیل" className={inputClasses} />
-                        <input value={filterPhoneNumber} onChange={(e) => setFilterPhoneNumber(e.target.value)} placeholder="شماره تلفن" className={inputClasses} />
-                      </div>
-                      <div className="mt-3 flex gap-2">
-                        <button onClick={() => void applyUserFilters()} className="min-h-10 rounded-lg bg-primary-600 px-4 text-sm font-medium text-white hover:bg-primary-700">اعمال</button>
-                        {hasActiveUserFilters && (
-                          <button onClick={clearUserFilters} className="min-h-10 rounded-lg px-3 text-sm font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700">پاک کردن</button>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {usersLoading ? (
-                    <div className="py-12 text-center text-sm text-gray-500">
-                      <span className="material-symbols-outlined animate-spin">progress_activity</span>
-                      <p className="mt-2">در حال بارگذاری کاربران...</p>
-                    </div>
-                  ) : (
-                    <div className="mt-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                      <label className="flex items-center gap-3 border-b border-gray-200 px-4 py-3 dark:border-gray-700">
-                        <input type="checkbox" checked={allSelected} onChange={toggleAllUsers} className="size-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">انتخاب همه ({allUsers.length})</span>
-                        {selectedUserIds.size > 0 && (
-                          <span className="text-xs text-primary-600 dark:text-primary-400">{selectedUserIds.size} انتخاب شده</span>
-                        )}
+            <form onSubmit={(event) => void handleSubmit(event)} className="flex min-h-0 flex-1 flex-col">
+              <div className="overflow-y-auto px-5 py-6 sm:px-7 sm:py-7">
+                {formError && <div className="mb-5 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300" role="alert"><span className="material-symbols-outlined text-[20px]">error</span><span>{formError}</span></div>}
+                {detailLoading ? (
+                  <div className="py-16 text-center text-sm text-gray-500"><span className="material-symbols-outlined animate-spin">progress_activity</span><p className="mt-2">در حال بارگذاری...</p></div>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-semibold text-gray-950 dark:text-white">جزئیات کد تخفیف</h3>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">اطلاعات کد تخفیف عمومی را وارد کنید.</p>
+                    <div className="mt-6 grid gap-5 sm:grid-cols-2">
+                      <label className="sm:col-span-2">
+                        <span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">کد تخفیف <span className="text-red-500">*</span></span>
+                        <div className="flex gap-2"><input value={form.code} onChange={(event) => setFormField("code", event.target.value)} placeholder="مثال: SUMMER20" dir="ltr" className={inputClasses} required /><button type="button" onClick={() => setFormField("code", generateRandomCode())} className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl border border-gray-300 bg-gray-50 px-3 text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300" title="تولید کد تصادفی"><span className="material-symbols-outlined text-xl">casino</span></button></div>
                       </label>
-                      <ul className="max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
-                        {visibleUsers.length === 0 && (
-                          <li className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                            {showSelectedOnly ? "کاربری انتخاب نشده است." : "کاربری یافت نشد."}
-                          </li>
-                        )}
-                        {visibleUsers.map((user) => {
-                          const checked = selectedUserIds.has(user.id);
-                          return (
-                            <li key={user.id}>
-                              <label className={`flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 ${checked ? "bg-primary-50/70 dark:bg-primary-950/20" : ""}`}>
-                                <input type="checkbox" checked={checked} onChange={() => toggleUser(user.id)} className="size-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                                <div className="min-w-0 flex-1">
-                                  <p className="truncate text-sm font-medium text-gray-900 dark:text-white">{user.firstName} {user.lastName}</p>
-                                  <p className="truncate text-xs text-gray-500 dark:text-gray-400">{user.phoneNumber}</p>
-                                </div>
-                                {checked && <span className="material-symbols-outlined shrink-0 text-lg text-primary-600 dark:text-primary-400">check_circle</span>}
-                              </label>
-                            </li>
-                          );
-                        })}
-                      </ul>
+                      <label><span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">مبلغ تخفیف (تومان)</span><input type="number" min={1} value={form.maxDiscountAmount} onChange={(event) => setDiscountAmount(event.target.value)} placeholder="مثال: ۲۰۰۰۰۰" className={inputClasses} /></label>
+                      <label><span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">درصد تخفیف</span><input type="number" min={0.01} max={100} step="0.01" value={form.discountPercentage} onChange={(event) => setDiscountPercentage(event.target.value)} placeholder="مثال: ۱۰" className={inputClasses} /></label>
+                      <label><span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">حداقل مبلغ خرید (تومان) <span className="text-red-500">*</span></span><input type="number" min={0} value={form.minimumPurchaseAmount} onChange={(event) => setFormField("minimumPurchaseAmount", event.target.value)} placeholder="مثال: ۱۰۰۰۰۰۰" className={inputClasses} required /></label>
+                      <label><span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">روش پرداخت</span><select value={form.paymentMethod} onChange={(event) => setFormField("paymentMethod", event.target.value)} className={inputClasses}>{paymentMethods.map((method) => <option key={method.value} value={method.value}>{method.label}</option>)}</select></label>
+                      <label><span className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">تاریخ انقضا</span><PersianDateTimePicker mode="datetime" value={form.expireAt} onChange={(value) => setFormField("expireAt", value)} className={inputClasses} ariaLabel="تاریخ انقضا" /></label>
+                      <label className="flex cursor-pointer items-center gap-3 sm:col-span-2"><input type="checkbox" checked={form.isActive} onChange={(event) => setFormField("isActive", event.target.checked)} className="size-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" /><span className="text-sm font-medium text-gray-700 dark:text-gray-300">فعال</span></label>
                     </div>
-                  )}
-                </section>
-              )}
-            </div>
-
-            <footer className="mt-auto flex items-center justify-between gap-3 border-t border-gray-200 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-900 sm:px-7">
-              <button type="button" onClick={wizardStep === 0 ? closeWizard : () => setWizardStep(0)} className="min-h-11 rounded-xl px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 dark:text-gray-300 dark:hover:bg-gray-800">{wizardStep === 0 ? "لغو" : "بازگشت"}</button>
-              <div className="flex items-center gap-2">
-                {wizardStep === 0 && (
-                  <button type="submit" form="discount-form" className="flex min-h-11 items-center gap-2 rounded-xl bg-primary-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-gray-900">
-                    ادامه
-                    <span className="material-symbols-outlined text-[19px]">arrow_back</span>
-                  </button>
-                )}
-                {wizardStep === 1 && (
-                  <button type="button" onClick={() => void handleFinalSubmit()} disabled={saving} className="flex min-h-11 items-center gap-2 rounded-xl bg-primary-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:focus:ring-offset-gray-900">
-                    {saving && <span className="material-symbols-outlined animate-spin text-[19px]">progress_activity</span>}
-                    {saving ? "در حال ذخیره..." : "ذخیره و پایان"}
-                  </button>
+                  </>
                 )}
               </div>
-            </footer>
+              <footer className="mt-auto flex items-center justify-between gap-3 border-t border-gray-200 bg-gray-50 px-5 py-4 dark:border-gray-800 dark:bg-gray-900 sm:px-7">
+                <button type="button" onClick={closeModal} className="min-h-11 rounded-xl px-4 text-sm font-medium text-gray-600 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-800">لغو</button>
+                <button type="submit" disabled={saving || detailLoading} className="flex min-h-11 items-center gap-2 rounded-xl bg-primary-600 px-5 text-sm font-semibold text-white hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50">{saving && <span className="material-symbols-outlined animate-spin text-[19px]">progress_activity</span>}{saving ? "در حال ذخیره..." : "ذخیره"}</button>
+              </footer>
+            </form>
           </div>
         </div>
       )}
 
-      <ConfirmDialog
-        open={confirmData !== null}
-        title={confirmData?.title ?? ""}
-        message={confirmData?.message ?? ""}
-        onConfirm={() => confirmData?.onConfirm()}
-        onCancel={() => setConfirmData(null)}
-      />
+      <ConfirmDialog open={confirmData !== null} title={confirmData?.title ?? ""} message={confirmData?.message ?? ""} onConfirm={() => confirmData?.onConfirm()} onCancel={() => setConfirmData(null)} />
     </div>
   );
 }

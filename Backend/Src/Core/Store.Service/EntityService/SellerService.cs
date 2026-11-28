@@ -285,7 +285,7 @@ public class SellerService(
         return Result<SellerOrderDetailOutput>.Success(new SellerOrderDetailOutput
         {
             Id = invoice.Id,
-            TotalPrice = GetItemsAmount(sellerItems),
+            TotalPrice = GetItemsAmount(sellerItems) - GetSellerDiscountShare(invoice, sellerIds),
             TotalCount = sellerItems.Sum(item => item.ProductCount),
             CreatedAt = invoice.CreatedAt,
             UpdatedAt = invoice.UpdatedAt,
@@ -380,5 +380,20 @@ public class SellerService(
 
     private static decimal GetItemsAmount(IEnumerable<InvoiceItemEntity> items) =>
         items.Sum(x => x.ProductPrice * x.ProductCount);
+
+    private static decimal GetSellerDiscountShare(InvoiceEntity invoice, HashSet<int> sellerIds)
+    {
+        var subtotal = GetItemsAmount(invoice.InvoiceItems);
+        if (subtotal <= 0)
+            return 0;
+
+        var payment = invoice.Payments.OrderBy(x => x.Id).FirstOrDefault();
+        if (payment == null || payment.Amount >= subtotal)
+            return 0;
+
+        var sellerAmount = GetItemsAmount(GetSellerItems(invoice, sellerIds));
+        var invoiceDiscount = subtotal - payment.Amount;
+        return decimal.Round(sellerAmount / subtotal * invoiceDiscount, 2, MidpointRounding.AwayFromZero);
+    }
 
 }
